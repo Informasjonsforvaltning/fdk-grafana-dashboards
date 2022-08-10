@@ -1,7 +1,7 @@
 local grafana = import 'grafonnet/grafana.libsonnet';
 local dashboard = grafana.dashboard;
 local table_panel = import 'grafonnet-7.0/panel/table.libsonnet';
-local graph_panel = import 'grafonnet/graph_panel.libsonnet';
+local timeseries_panel = import 'grafonnet/timeseries_panel.libsonnet';
 local prometheus = grafana.prometheus;
 local template = grafana.template;
 
@@ -21,14 +21,13 @@ dashboard.new(
   )
 )
 .addPanel(
-  graph_panel.new(
+  timeseries_panel.new(
     'Messages in per Second',
-    datasource='prometheus',
-    min=0,
-  )
-  .addTarget(
+    showPoints='never',
+  ).addTarget(
     prometheus.target(
       'sum(rate(kafka_topic_partition_current_offset{topic=~"$topic"}[60s])) by (topic)',
+      datasource='prometheus',
       interval='1s',
       legendFormat='{{topic}}',
     )
@@ -40,14 +39,14 @@ dashboard.new(
   }
 )
 .addPanel(
-  graph_panel.new(
+  timeseries_panel.new(
     'Messages Consumed per Second',
-    datasource='prometheus',
-    min=0,
+    showPoints='never',
   )
   .addTarget(
     prometheus.target(
       'sum(rate(kafka_consumergroup_current_offset{topic=~"$topic"}[60s])) by (consumergroup, topic)',
+      datasource='prometheus',
       interval='1s',
       legendFormat='{{consumergroup}} (topic: {{topic}})',
     )
@@ -59,14 +58,13 @@ dashboard.new(
   }
 )
 .addPanel(
-  graph_panel.new(
+  timeseries_panel.new(
     title='Lag by Consumer Group',
-    datasource='prometheus',
-    min=0,
-  )
-  .addTarget(
+    showPoints='never',
+  ).addTarget(
     prometheus.target(
       'avg(kafka_consumergroup_lag{topic=~"$topic"}) by (consumergroup, topic)',
+      datasource='prometheus',
       interval='1s',
       legendFormat='{{consumergroup}} (topic: {{topic}})',
     )
