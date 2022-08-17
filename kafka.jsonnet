@@ -28,6 +28,7 @@ dashboard.new(
     prometheus.target(
       'sum(rate(kafka_topic_partition_current_offset{topic=~"$topic"}[60s])) by (topic)',
       datasource='prometheus',
+      intervalFactor=1,
       interval='1s',
       legendFormat='{{topic}}',
     )
@@ -47,6 +48,7 @@ dashboard.new(
     prometheus.target(
       'sum(rate(kafka_consumergroup_current_offset{topic=~"$topic"}[60s])) by (consumergroup, topic)',
       datasource='prometheus',
+      intervalFactor=1,
       interval='1s',
       legendFormat='{{consumergroup}} (topic: {{topic}})',
     )
@@ -65,6 +67,7 @@ dashboard.new(
     prometheus.target(
       'avg(kafka_consumergroup_lag{topic=~"$topic"}) by (consumergroup, topic)',
       datasource='prometheus',
+      intervalFactor=1,
       interval='1s',
       legendFormat='{{consumergroup}} (topic: {{topic}})',
     )
