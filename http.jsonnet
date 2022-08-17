@@ -23,7 +23,7 @@ dashboard.new(
 )
 .addPanel(
   std.mergePatch(timeseries_panel.new(
-    'Respons Times',
+    'Response Times',
     graphStyle='points',
     axisLogBase=2,
   ).addTarget(
