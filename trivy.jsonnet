@@ -11,9 +11,11 @@ dashboard.new(
   time_from='now-2h',
 )
 .addPanel(
-  grafana.gaugePanel.new(
+  grafana.statPanel.new(
     'CRITICAL',
     unit='none',
+    graphMode='none',
+    reducerFunction='last',
   ).addTarget(
     prometheus.target(
       'sum(trivy_image_vulnerabilities{severity="Critical"})',
@@ -31,9 +33,11 @@ dashboard.new(
   }
 )
 .addPanel(
-  grafana.gaugePanel.new(
+  grafana.statPanel.new(
     'HIGH',
     unit='none',
+    graphMode='none',
+    reducerFunction='last',
   ).addTarget(
     prometheus.target(
       'sum(trivy_image_vulnerabilities{severity="High"})',
@@ -51,9 +55,11 @@ dashboard.new(
   }
 )
 .addPanel(
-  grafana.gaugePanel.new(
+  grafana.statPanel.new(
     'MEDIUM',
     unit='none',
+    graphMode='none',
+    reducerFunction='last',
   ).addTarget(
     prometheus.target(
       'sum(trivy_image_vulnerabilities{severity="Medium"})',
@@ -71,9 +77,11 @@ dashboard.new(
   }
 )
 .addPanel(
-  grafana.gaugePanel.new(
+  grafana.statPanel.new(
     'LOW',
     unit='none',
+    graphMode='none',
+    reducerFunction='last',
   ).addTarget(
     prometheus.target(
       'sum(trivy_image_vulnerabilities{severity="Low"})',
@@ -91,9 +99,11 @@ dashboard.new(
   }
 )
 .addPanel(
-  grafana.gaugePanel.new(
+  grafana.statPanel.new(
     'UNKNOWN',
     unit='none',
+    graphMode='none',
+    reducerFunction='last',
   ).addTarget(
     prometheus.target(
       'sum(trivy_image_vulnerabilities{severity="Unknown"})',
