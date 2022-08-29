@@ -1,0 +1,16 @@
+name: Deploy Preview
+
+on:
+  pull_request:
+    types: [ready_for_review, opened, reopened, synchronize]
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy Dashboard Previews
+    uses: Informasjonsforvaltning/workflows/.github/workflows/grafana-dashboard-previews.yaml@grafana
+    secrets:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      grafana_url: ${{ secrets.GRAFANA_TEST_URL }}
+      grafana_token: ${{ secrets.GRAFANA_TEST_TOKEN }}
