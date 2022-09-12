@@ -17,10 +17,10 @@ dashboard.new(
   )
   .addTarget(
     prometheus.target(
-      'sum(rate(processed_messages{status="success"}[$__rate_interval])) by (fdk_service)',
+      'sum(rate(processed_messages{status="success"}[$__rate_interval])) by (fdk_service, kubernetes_namespace)',
       datasource='prometheus',
       interval='2s',
-      legendFormat='{{fdk_service}}',
+      legendFormat='{{fdk_service}} ({{kubernetes_namespace}})',
     )
   ), gridPos={
     x: 0,
@@ -46,10 +46,10 @@ dashboard.new(
   )
   .addTarget(
     prometheus.target(
-      'sum(rate(processed_messages{status="error"}[$__rate_interval])) by (fdk_service)',
+      'sum(rate(processed_messages{status="error"}[$__rate_interval])) by (fdk_service, kubernetes_namespace)',
       datasource='prometheus',
       interval='2s',
-      legendFormat='{{fdk_service}}',
+      legendFormat='{{fdk_service}} ({{kubernetes_namespace}})',
     )
   ) + {
     fieldConfig+: {
@@ -86,10 +86,10 @@ dashboard.new(
   )
   .addTarget(
     prometheus.target(
-      'sum(rate(processing_time_sum{}[$__rate_interval]) / rate(processing_time_count{}[$__rate_interval])) by (fdk_service)',
+      'sum(rate(processing_time_sum{}[$__rate_interval]) / rate(processing_time_count{}[$__rate_interval])) by (fdk_service, kubernetes_namespace)',
       datasource='prometheus',
       interval='2s',
-      legendFormat='{{fdk_service}}',
+      legendFormat='{{fdk_service}} ({{kubernetes_namespace}})',
     )
   ) + {
     fieldConfig+: {
