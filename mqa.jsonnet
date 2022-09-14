@@ -34,7 +34,6 @@ dashboard.new(
     'Messages Processing Errors per Second',
     lineWidth=2,
     min=0,
-    max=1,
   )
   .addThreshold(
     'green',
@@ -42,7 +41,7 @@ dashboard.new(
   )
   .addThreshold(
     'dark-red',
-    value=0.05,
+    value=1,
   )
   .addTarget(
     prometheus.target(
@@ -86,7 +85,7 @@ dashboard.new(
   )
   .addTarget(
     prometheus.target(
-      'sum(rate(processing_time_sum{}[30s])*30 / rate(processing_time_count{}[30s])*30) by (fdk_service, kubernetes_namespace)',
+      'sum(rate(processing_time_sum{}[30s]) / rate(processing_time_count{}[30s])) by (fdk_service, kubernetes_namespace)',
       datasource='prometheus',
       interval='2s',
       legendFormat='{{fdk_service}} ({{kubernetes_namespace}})',
