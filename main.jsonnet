@@ -2,6 +2,7 @@
   grafanaDashboards:: {
     elasticsearch: (import 'elasticsearch.jsonnet'),
     http: (import 'http.jsonnet'),
+    blackbox: (import 'blackbox.jsonnet'),
     kafka: (import 'kafka.jsonnet'),
     mqa: (import 'mqa.jsonnet'),
     nginx: (import 'nginx.jsonnet'),
