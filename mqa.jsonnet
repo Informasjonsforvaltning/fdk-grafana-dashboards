@@ -1,7 +1,7 @@
 local grafana = import 'grafonnet/grafana.libsonnet';
 local dashboard = grafana.dashboard;
 local table_panel = import 'grafonnet-7.0/panel/table.libsonnet';
-local timeseries_panel = import 'grafonnet/timeseries_panel.libsonnet';
+local timeseries_panel = import 'github.com/rhowe/grafonnet-lib/grafonnet/timeseries_panel.libsonnet';
 local prometheus = grafana.prometheus;
 local template = grafana.template;
 
