@@ -1,6 +1,6 @@
 local grafana = import 'grafonnet/grafana.libsonnet';
 local dashboard = grafana.dashboard;
-local timeseries_panel = import 'grafonnet/timeseries_panel.libsonnet';
+local timeseries_panel = import 'github.com/rhowe/grafonnet-lib/grafonnet/timeseries_panel.libsonnet';
 local prometheus = grafana.prometheus;
 
 // Logarithmic currently not working, so using std.mergePatch to modify type field.
