@@ -1,0 +1,22 @@
+name: Deploy Dashboards
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy_dashboards_staging:
+    name: Deploy Dashboards to Staging
+    uses: Informasjonsforvaltning/workflows/.github/workflows/grafana-dashboard-preview.yaml@grafana
+    secrets:
+      GRAFANA_URL: ${{ secrets.GRAFANA_URL_STAGING }}
+      GRAFANA_TOKEN: ${{ secrets.GRAFANA_TOKEN_STAGING }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  deploy_dashboards_prod:
+    name: Deploy Dashboards to Prod
+    uses: Informasjonsforvaltning/workflows/.github/workflows/grafana-dashboard-preview.yaml@grafana
+    secrets:
+      GRAFANA_URL: ${{ secrets.GRAFANA_URL }}
+      GRAFANA_TOKEN: ${{ secrets.GRAFANA_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
