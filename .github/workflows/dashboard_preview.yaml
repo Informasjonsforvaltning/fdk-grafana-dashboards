@@ -1,0 +1,16 @@
+name: Preview Dashboards
+
+on:
+  pull_request:
+    types: [ready_for_review, opened, reopened, synchronize]
+    branches:
+      - main
+
+jobs:
+  preview_dashboards:
+    name: Preview Dashboards
+    uses: Informasjonsforvaltning/workflows/.github/workflows/grafana-dashboard-preview.yaml@grafana
+    secrets:
+      GRAFANA_URL: ${{ secrets.GRAFANA_URL_STAGING }}
+      GRAFANA_TOKEN: ${{ secrets.GRAFANA_TOKEN_STAGING }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
