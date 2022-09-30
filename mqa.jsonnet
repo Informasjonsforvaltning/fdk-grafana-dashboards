@@ -17,7 +17,7 @@ dashboard.new(
   )
   .addTarget(
     prometheus.target(
-      'sum(rate(processed_messages{status="success"}[30s])*30) by (fdk_service, kubernetes_namespace)',
+      'sum(rate(processed_messages{status="success"}[3m])*180) by (fdk_service, kubernetes_namespace)',
       datasource='prometheus',
       interval='2s',
       legendFormat='{{fdk_service}} ({{kubernetes_namespace}})',
@@ -45,7 +45,7 @@ dashboard.new(
   )
   .addTarget(
     prometheus.target(
-      'sum(rate(processed_messages{status="error"}[30s])*30) by (fdk_service, kubernetes_namespace)',
+      'sum(rate(processed_messages{status="error"}[3m])*180) by (fdk_service, kubernetes_namespace)',
       datasource='prometheus',
       interval='2s',
       legendFormat='{{fdk_service}} ({{kubernetes_namespace}})',
