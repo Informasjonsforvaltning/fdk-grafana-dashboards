@@ -1,4 +1,4 @@
-# Grafana Dashboards
+# FDK Grafana Dashboards
 
 Collection of Grafana dashboards
 written in [jsonnet](https://jsonnet.org)
