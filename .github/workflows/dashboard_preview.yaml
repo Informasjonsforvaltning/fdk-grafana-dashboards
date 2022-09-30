@@ -9,7 +9,7 @@ on:
 jobs:
   preview_dashboards:
     name: Preview Dashboards
-    uses: Informasjonsforvaltning/workflows/.github/workflows/grafana-dashboard-preview.yaml@grafana
+    uses: Informasjonsforvaltning/workflows/.github/workflows/grafana-dashboard-preview.yaml@main
     secrets:
       GRAFANA_URL: ${{ secrets.GRAFANA_URL_STAGING }}
       GRAFANA_TOKEN: ${{ secrets.GRAFANA_TOKEN_STAGING }}
