@@ -236,7 +236,7 @@ dashboard.new(
     ''
   ).addTarget(
     prometheus.target(
-      'max(trivy_image_vulnerabilities{}) by (image_registry, image_repository, image_tag)',
+      'sum(trivy_image_vulnerabilities{}) by (image_registry, image_repository, image_tag)',
       datasource='prometheus',
       format='table',
       instant=true,
