@@ -55,3 +55,5 @@ grr watch . main.jsonnet
 
 Then finally open [http://localhost:3000](http://localhost:3000) and login with
 `admin` `admin`.
+
+Any local code changes will now instantly be pushed to Grafana.
