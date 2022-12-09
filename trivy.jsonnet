@@ -232,6 +232,27 @@ dashboard.new(
   }
 )
 .addPanel(
+  timeseries_panel.new(
+    'Critical vulnerabilities',
+    lineWidth=2,
+    colorMode='fixed',
+    fixedColor='red'
+  )
+  .addTarget(
+    prometheus.target(
+      'sum(trivy_image_vulnerabilities{severity="Critical"})',
+      datasource='prometheus',
+      interval='2s',
+      legendFormat='{{fdk_service}} ({{kubernetes_namespace}})',
+    )
+  ), gridPos={
+    x: 0,
+    y: 1,
+    w: 24,
+    h: 8,
+  }
+)
+.addPanel(
   table_panel.new(
     ''
   ).addTarget(
@@ -433,8 +454,8 @@ dashboard.new(
   },
   gridPos={
     x: 0,
-    y: 1,
+    y: 2,
     w: 24,
-    h: 20,
+    h: 12,
   }
 )
