@@ -33,7 +33,7 @@ export BASIC_AUTH_PASSWORD=<ask someone>
 Run Grafana with docker, wait for it to init, create an access token, configure
 datasource from dev cluster:
 
-```
+```bash
 docker run --rm -d -p 3000:3000 --name grafana grafana/grafana
 export GRAFANA_HOST=localhost:3000
 export GRAFANA_URL=http://${GRAFANA_HOST}
