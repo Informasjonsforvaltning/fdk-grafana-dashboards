@@ -18,11 +18,10 @@ development is advised.
 
 ### Requirements
 
-See links in intro for install instructions.
-
-- docker/podman
-- jsonnet-bundler
-- grizzly
+- [docker](https://docs.docker.com/engine/install/ubuntu)/[podman](https://podman.io/getting-started/installation)
+- [jq](https://stedolan.github.io/jq)
+- [jsonnet-bundler](https://github.com/jsonnet-bundler/jsonnet-bundler)
+- [grizzly](https://grafana.github.io/grizzly)
 
 ### Running Grafana with docker
 
