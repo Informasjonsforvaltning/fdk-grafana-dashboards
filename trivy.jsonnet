@@ -8,7 +8,7 @@ local template = grafana.template;
 dashboard.new(
   'Trivy',
   tags=['trivy'],
-  time_from='now-2h',
+  time_from='now-30d',
 )
 .addPanel(
   grafana.statPanel.new(
@@ -236,20 +236,41 @@ dashboard.new(
     'Critical vulnerabilities',
     lineWidth=2,
     colorMode='fixed',
-    fixedColor='red'
+    fixedColor='red',
   )
   .addTarget(
     prometheus.target(
       'sum(trivy_image_vulnerabilities{severity="Critical"})',
       datasource='prometheus',
-      interval='2s',
+      interval='1m',
       legendFormat='{{fdk_service}} ({{kubernetes_namespace}})',
     )
   ), gridPos={
     x: 0,
     y: 1,
     w: 24,
-    h: 8,
+    h: 6,
+  }
+)
+.addPanel(
+  timeseries_panel.new(
+    'High vulnerabilities',
+    lineWidth=2,
+    colorMode='fixed',
+    fixedColor='orange',
+  )
+  .addTarget(
+    prometheus.target(
+      'sum(trivy_image_vulnerabilities{severity="High"})',
+      datasource='prometheus',
+      interval='1m',
+      legendFormat='{{fdk_service}} ({{kubernetes_namespace}})',
+    )
+  ), gridPos={
+    x: 0,
+    y: 2,
+    w: 24,
+    h: 6,
   }
 )
 .addPanel(
