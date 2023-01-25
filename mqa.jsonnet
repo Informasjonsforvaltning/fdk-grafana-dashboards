@@ -26,7 +26,7 @@ dashboard.new(
     x: 0,
     y: 0,
     w: 24,
-    h: 12,
+    h: 10,
   }
 )
 .addPanel(
