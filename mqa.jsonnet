@@ -1,110 +1,189 @@
-local grafana = import 'grafonnet/grafana.libsonnet';
-local dashboard = grafana.dashboard;
-local table_panel = import 'grafonnet-7.0/panel/table.libsonnet';
-local timeseries_panel = import 'github.com/rhowe/grafonnet-lib/grafonnet/timeseries_panel.libsonnet';
-local prometheus = grafana.prometheus;
-local template = grafana.template;
+local g = import 'github.com/grafana/grafonnet/gen/grafonnet-latest/main.libsonnet';
 
-dashboard.new(
-  'MQA',
-  tags=['mqa'],
-  time_from='now-2h',
-)
-.addPanel(
-  timeseries_panel.new(
-    'Messages Successfully Processed per Second',
-    lineWidth=2,
-  )
-  .addTarget(
-    prometheus.target(
-      'sum(rate(processed_messages{status="success"}[3m])*180) by (fdk_service, kubernetes_namespace)',
-      datasource='prometheus',
-      interval='2s',
-      legendFormat='{{fdk_service}} ({{kubernetes_namespace}})',
-    )
-  ), gridPos={
-    x: 0,
-    y: 0,
-    w: 24,
-    h: 10,
-  }
-)
-.addPanel(
-  timeseries_panel.new(
-    'Messages Processing Errors per Second',
-    lineWidth=2,
-    min=0,
-  )
-  .addThreshold(
-    'green',
-    value=0,
-  )
-  .addThreshold(
-    'dark-red',
-    value=1,
-  )
-  .addTarget(
-    prometheus.target(
-      'sum(rate(processed_messages{status="error"}[3m])*180) by (fdk_service, kubernetes_namespace)',
-      datasource='prometheus',
-      interval='2s',
-      legendFormat='{{fdk_service}} ({{kubernetes_namespace}})',
-    )
-  ) + {
-    fieldConfig+: {
-      defaults+: {
-        custom+: {
-          lineWidth: 2,
-          thresholdsStyle: {
-            mode: 'line+area',
-          },
-        },
-      },
-    },
-  }, gridPos={
-    x: 0,
-    y: 1,
-    w: 24,
-    h: 8,
-  }
-)
-.addPanel(
-  timeseries_panel.new(
-    'Average processing time',
-    lineWidth=2,
-    min=0,
-    max=15,
-  )
-  .addThreshold(
-    'green',
-    value=0,
-  )
-  .addThreshold(
-    'dark-red',
-    value=5,
-  )
-  .addTarget(
-    prometheus.target(
-      'sum(rate(processing_time_sum{}[30s]) / rate(processing_time_count{}[30s])) by (fdk_service, kubernetes_namespace)',
-      datasource='prometheus',
-      interval='2s',
-      legendFormat='{{fdk_service}} ({{kubernetes_namespace}})',
-    )
-  ) + {
-    fieldConfig+: {
-      defaults+: {
-        custom+: {
-          lineWidth: 2,
-          thresholdsStyle: {
-            mode: 'line+area',
-          },
-        },
-      },
-    },
-  }, gridPos={
-    x: 0,
-    y: 2,
-    w: 24,
-    h: 8,
-  }
+local dashboard = g.dashboard;
+local prometheusQuery = g.query.prometheus;
+local timeSeriesPanel = g.panel.timeSeries;
+local statPanel = g.panel.stat;
+local util = g.util;
+
+dashboard.new('MQA')
++ dashboard.withTags(['mqa'])
++ dashboard.time.withFrom('now-12h')
++ dashboard.time.withTo('now')
++ g.dashboard.withVariables([
+  dashboard.variable.custom.new('namespace', values = ['prod', 'staging', 'demo'])
+  + dashboard.variable.custom.generalOptions.withLabel('Environment')
+  + dashboard.variable.custom.generalOptions.withName('namespace')
+  + dashboard.variable.custom.selectionOptions.withIncludeAll(false)
+])
++ dashboard.withPanels(
+  util.grid.makeGrid([
+    g.panel.row.new('Metadata Quality Flow')
+    + g.panel.row.withPanels([
+      statPanel.new('DATASET HARVEST')
+       + statPanel.options.withGraphMode('none')
+       + statPanel.options.reduceOptions.withCalcs(['delta'])
+       + statPanel.options.reduceOptions.withValues(false)       
+       + statPanel.queryOptions.withTargets([
+        prometheusQuery.new(
+          'prometheus',
+          |||
+            sum by (fdk_service) ({__name__="processed_messages", fdk_service='fdk-mqa-assmentator',status="success", kubernetes_namespace="$namespace"})
+          |||
+        )])
+      + statPanel.panelOptions.withGridPos(6, 4, 0, 0),
+
+      statPanel.new('ASSESSMENT CREATION')
+       + statPanel.options.withGraphMode('none')
+       + statPanel.options.reduceOptions.withCalcs(['delta'])
+       + statPanel.options.reduceOptions.withValues(false)       
+       + statPanel.queryOptions.withTargets([
+        prometheusQuery.new(
+          'prometheus',
+          |||
+            sum by (fdk_service) ({__name__="produced_messages", fdk_service='fdk-mqa-assmentator',status="success", kubernetes_namespace="$namespace"})
+          |||
+        )])
+      + statPanel.panelOptions.withGridPos(6, 4, 0, 0),
+
+      statPanel.new('URL CHECK')
+       + statPanel.options.withGraphMode('none')
+       + statPanel.options.reduceOptions.withCalcs(['delta'])
+       + statPanel.options.reduceOptions.withValues(false)       
+       + statPanel.queryOptions.withTargets([
+        prometheusQuery.new(
+          'prometheus',
+          |||
+            sum by (fdk_service) ({__name__="processed_messages", fdk_service='fdk-mqa-url-checker',status="success", kubernetes_namespace="$namespace"})
+          |||
+        )])
+      + statPanel.panelOptions.withGridPos(6, 5, 4, 0),
+
+      statPanel.new('PROPERTIES CHECK')
+       + statPanel.options.withGraphMode('none')
+       + statPanel.options.reduceOptions.withCalcs(['delta'])
+       + statPanel.options.reduceOptions.withValues(false)       
+       + statPanel.queryOptions.withTargets([
+        prometheusQuery.new(
+          'prometheus',
+          |||
+            sum by (fdk_service) ({__name__="processed_messages", fdk_service='fdk-mqa-property-checker',status="success", kubernetes_namespace="$namespace"})
+          |||
+        )])
+      + statPanel.panelOptions.withGridPos(6, 5, 9, 0),
+
+      statPanel.new('DCAT VALIDATION')
+       + statPanel.options.withGraphMode('none')
+       + statPanel.options.reduceOptions.withCalcs(['delta'])
+       + statPanel.options.reduceOptions.withValues(false)       
+       + statPanel.queryOptions.withTargets([
+        prometheusQuery.new(
+          'prometheus',
+          |||
+            sum by (fdk_service) ({__name__="processed_messages", fdk_service='fdk-mqa-dcat-validator',status="success", kubernetes_namespace="$namespace"})
+          |||
+        )])
+      + statPanel.panelOptions.withGridPos(6, 5, 14, 0),
+
+      statPanel.new('SCORING')
+       + statPanel.options.withGraphMode('none')
+       + statPanel.options.reduceOptions.withCalcs(['delta'])
+       + statPanel.options.reduceOptions.withValues(false)       
+       + statPanel.queryOptions.withTargets([
+        prometheusQuery.new(
+          'prometheus',
+          |||
+            sum by (fdk_service) ({__name__="processed_messages", fdk_service='fdk-mqa-scoring-service',status="success", kubernetes_namespace="$namespace"})
+          |||
+        )])
+      + statPanel.panelOptions.withGridPos(6, 5, 19, 0)
+      ]),
+    g.panel.row.new('Messages and processing time')
+    + g.panel.row.withPanels([
+      timeSeriesPanel.new('Messages Successfully Processed per Second')      
+      + timeSeriesPanel.fieldConfig.defaults.custom.withLineWidth(2)
+      + timeSeriesPanel.queryOptions.withDatasource('prometheus', 'prometheus')
+      + timeSeriesPanel.queryOptions.withTargets([
+        prometheusQuery.new(
+          'prometheus',
+          |||
+            sum(rate(processed_messages{status="success", fdk_service=~"fdk-mqa-.*", kubernetes_namespace="$namespace"}[10m])*600) by (fdk_service)
+          |||
+        )
+        + prometheusQuery.withIntervalFactor(2)
+        + prometheusQuery.withLegendFormat(|||
+          {{fdk_service}}
+        |||)
+      ])
+      + timeSeriesPanel.panelOptions.withGridPos(10, 24, 0, 0),
+
+      timeSeriesPanel.new('Messages Skipped per Second')      
+      + timeSeriesPanel.fieldConfig.defaults.custom.withLineWidth(2)
+      + timeSeriesPanel.queryOptions.withDatasource('prometheus', 'prometheus')
+      + timeSeriesPanel.queryOptions.withTargets([
+        prometheusQuery.new(
+          'prometheus',
+          |||
+            sum(rate(processed_messages{status="skipped", fdk_service=~"fdk-mqa-.*", kubernetes_namespace="$namespace"}[10m])*600) by (fdk_service)
+          |||
+        )
+        + prometheusQuery.withIntervalFactor(2)
+        + prometheusQuery.withLegendFormat(|||
+          {{fdk_service}}
+        |||)
+      ])
+      + timeSeriesPanel.panelOptions.withGridPos(10, 24, 0, 0),
+
+      timeSeriesPanel.new('Messages Processing Errors per Second')
+      + timeSeriesPanel.fieldConfig.defaults.custom.withLineWidth(2)
+      + timeSeriesPanel.fieldConfig.defaults.custom.thresholdsStyle.withMode('line+area')
+      + timeSeriesPanel.standardOptions.thresholds.withMode('absolute')
+      + timeSeriesPanel.standardOptions.thresholds.withSteps([
+        timeSeriesPanel.standardOptions.threshold.step.withColor('green')
+        + timeSeriesPanel.standardOptions.threshold.step.withValue(0),
+        timeSeriesPanel.standardOptions.threshold.step.withColor('dark-red')
+        + timeSeriesPanel.standardOptions.threshold.step.withValue(1)
+      ])
+      + timeSeriesPanel.queryOptions.withDatasource('prometheus', 'prometheus')
+      + timeSeriesPanel.queryOptions.withTargets([
+        prometheusQuery.new(
+          'prometheus',
+          |||
+            sum(rate(processed_messages{status="error", fdk_service=~"fdk-mqa-.*", kubernetes_namespace="$namespace"}[10m])*600) by (fdk_service)
+          |||
+        )
+        + prometheusQuery.withIntervalFactor(2)
+        + prometheusQuery.withLegendFormat(|||
+          {{fdk_service}}
+        |||)
+      ])
+      + timeSeriesPanel.panelOptions.withGridPos(8, 24, 0, 1),
+
+      timeSeriesPanel.new('Average processing time')    
+      + timeSeriesPanel.standardOptions.thresholds.withMode('absolute') 
+      + timeSeriesPanel.standardOptions.thresholds.withSteps([
+        timeSeriesPanel.standardOptions.threshold.step.withColor('green')
+        + timeSeriesPanel.standardOptions.threshold.step.withValue(0),
+        timeSeriesPanel.standardOptions.threshold.step.withColor('dark-red')
+        + timeSeriesPanel.standardOptions.threshold.step.withValue(1)
+      ])
+      + timeSeriesPanel.fieldConfig.defaults.custom.withSpanNulls(true)
+      + timeSeriesPanel.fieldConfig.defaults.custom.withLineWidth(2)
+      + timeSeriesPanel.fieldConfig.defaults.custom.thresholdsStyle.withMode('line+area')
+      + timeSeriesPanel.queryOptions.withDatasource('prometheus', 'prometheus')
+      + timeSeriesPanel.queryOptions.withTargets([
+        prometheusQuery.new(
+          'prometheus',
+          |||
+            sum(rate(processing_time_sum{fdk_service=~"fdk-mqa-.*", kubernetes_namespace="$namespace"}[10m]) / rate(processing_time_count{fdk_service=~"fdk-mqa-.*", kubernetes_namespace="$namespace"}[10m])) by (fdk_service)
+          |||
+        )
+        + prometheusQuery.withIntervalFactor(2)
+        + prometheusQuery.withLegendFormat(|||
+          {{fdk_service}}
+        |||)
+      ])
+      + timeSeriesPanel.panelOptions.withGridPos(8, 24, 0, 2)
+    ])
+  ])
 )

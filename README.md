@@ -25,6 +25,11 @@ Although sufficient for small changes, the feedback loop between change and
 result is quite slow. For frequent changes and continous visual updates, local
 development is advised.
 
+## Compile 
+```
+jsonnet -J vendor main.jsonnet
+```
+
 ## Local Development
 
 ### Requirements
@@ -49,11 +54,23 @@ datasource from dev cluster:
 
 ```bash
 docker run --rm -d -p 3000:3000 --name grafana grafana/grafana
-export GRAFANA_HOST=localhost:3000
-export GRAFANA_URL=http://${GRAFANA_HOST}
-while ! curl "http://admin:admin@${GRAFANA_HOST}/api/auth/keys" -s && echo ...; do sleep 1; done
-export GRAFANA_TOKEN=$(curl -X POST -H "Content-Type: application/json" -d '{"name":"apikeycurl", "role": "Admin"}' "http://admin:admin@${GRAFANA_HOST}/api/auth/keys" | jq -r .key)
-curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $GRAFANA_TOKEN" -d "{\"uid\":\"prometheus\",\"name\":\"Prometheus\",\"type\":\"prometheus\",\"url\":\"$PROMETHEUS_URL\",\"access\":\"proxy\",\"basicAuth\":true,\"basicAuthUser\":\"$BASIC_AUTH_USER\",\"secureJsonData\":{\"basicAuthPassword\":\"$BASIC_AUTH_PASSWORD\"}}" $GRAFANA_URL/api/datasources
+```
+
+Copy example environment variables:
+```bash
+cp .env.example .env
+```
+
+Configure environment variables:
+```bash
+PROMETHEUS_URL=https://thanos.dev.fellesdatakatalog.digdir.no
+BASIC_AUTH_USER=admin
+BASIC_AUTH_PASSWORD=admin
+
+GRAFANA_HOST=localhost:3000
+GRAFANA_SCHEME=http
+GRAFANA_ADMIN_USER=admin
+GRAFANA_ADMIN_PASSWORD=admin
 ```
 
 ### Apply Dashboards
@@ -61,9 +78,7 @@ curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $GRAF
 Apply the dashboards and update on any saved changes:
 
 ```bash
-jb install
-grr apply main.jsonnet
-grr watch . main.jsonnet
+sh apply.sh
 ```
 
 Any local code changes will now instantly be pushed to Grafana.
