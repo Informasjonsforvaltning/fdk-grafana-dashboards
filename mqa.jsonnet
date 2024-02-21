@@ -12,6 +12,7 @@ dashboard.new('FDK Metadata Quality')
 + dashboard.withTags(['mqa'])
 + dashboard.time.withFrom('now-12h')
 + dashboard.time.withTo('now')
++ dashboard.withTimezone('browser')
 + dashboard.withTemplating({
    "list": [
      {
