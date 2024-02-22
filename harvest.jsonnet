@@ -81,7 +81,7 @@ dashboard.new('FDK Harvesting')
        "type": "prometheus",
        "uid": "prometheus"
      },
-     "definition": "label_values(datasource_id)",
+     "definition": "label_values({kubernetes_namespace=\"$namespace\", type=\"$type\"},datasource_id)",
      "hide": 0,
      "includeAll": true,
      "multi": false,
@@ -89,7 +89,7 @@ dashboard.new('FDK Harvesting')
      "options": [],
      "query": {
        "qryType": 1,
-       "query": "label_values(datasource_id)",
+       "query": "label_values({kubernetes_namespace=\"$namespace\", type=\"$type\"}, datasource_id)",
        "refId": "PrometheusVariableQueryEditor-VariableQuery"
      },
      "refresh": 1,
