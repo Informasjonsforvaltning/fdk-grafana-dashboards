@@ -81,7 +81,7 @@ dashboard.new('FDK Harvesting')
        "type": "prometheus",
        "uid": "prometheus"
      },
-     "definition": "label_values({kubernetes_namespace=\"$namespace\", type=\"$type\"},datasource_id)",
+     "definition": "label_values({kubernetes_namespace=\"$namespace\", type=~\"$type\"},datasource_id)",
      "hide": 0,
      "includeAll": true,
      "multi": false,
@@ -89,7 +89,7 @@ dashboard.new('FDK Harvesting')
      "options": [],
      "query": {
        "qryType": 1,
-       "query": "label_values({kubernetes_namespace=\"$namespace\", type=\"$type\"}, datasource_id)",
+       "query": "label_values({kubernetes_namespace=\"$namespace\", type=~\"$type\"}, datasource_id)",
        "refId": "PrometheusVariableQueryEditor-VariableQuery"
      },
      "refresh": 1,
@@ -107,12 +107,12 @@ dashboard.new('FDK Harvesting')
             prometheusQuery.new(
               'prometheus',
               |||
-                sum by (datasource_id, type, force_update, kubernetes_namespace, fdk_service) (floor(rate(harvest_count_total{kubernetes_namespace="$namespace", status="success", datasource_id=~"${datasource}", type=~"$type"}[5m])*300))
+                sum by (datasource_id, datasource_url, type, force_update, kubernetes_namespace, fdk_service) (floor(rate(harvest_count_total{kubernetes_namespace="$namespace", status="success", datasource_id=~"${datasource}", type=~"$type"}[5m])*300))
               |||
             )
             + prometheusQuery.withIntervalFactor(2)
             + prometheusQuery.withLegendFormat(|||
-              {{datasource_id}} (type:{{type}}, force:{{force_update}})
+              {{datasource_url}} (type:{{type}}, id:{{datasource_id}}, force:{{force_update}})
             |||)
           ])
           + timeSeriesPanel.panelOptions.withGridPos(6, 12, 0, 0)
@@ -143,12 +143,12 @@ dashboard.new('FDK Harvesting')
             prometheusQuery.new(
               'prometheus',
               |||
-                sum by (datasource_id, type, force_update, fdk_service, kubernetes_namespace) (floor(rate(harvest_count_total{kubernetes_namespace="$namespace", status="error", datasource_id=~"${datasource}", type=~"$type"}[5m])*300))
+                sum by (datasource_id, datasource_url, type, force_update, fdk_service, kubernetes_namespace) (floor(rate(harvest_count_total{kubernetes_namespace="$namespace", status="error", datasource_id=~"${datasource}", type=~"$type"}[5m])*300))
               |||
             )
             + prometheusQuery.withIntervalFactor(2)
             + prometheusQuery.withLegendFormat(|||
-              {{datasource_id}} (type:{{type}}, force:{{force_update}})
+              {{datasource_url}} (type:{{type}}, id:{{datasource_id}}, force:{{force_update}})
             |||)
           ])
         + timeSeriesPanel.panelOptions.withGridPos(6, 12, 12, 0)
@@ -179,12 +179,12 @@ dashboard.new('FDK Harvesting')
             prometheusQuery.new(
               'prometheus',
               |||
-                sum by (datasource_id, type, force_update, fdk_service, kubernetes_namespace) (floor(rate(harvest_changed_resources_count_total{kubernetes_namespace="$namespace", datasource_id=~"${datasource}", type=~"$type"}[5m])*300))
+                sum by (datasource_id, datasource_url, type, force_update, fdk_service, kubernetes_namespace) (floor(rate(harvest_changed_resources_count_total{kubernetes_namespace="$namespace", datasource_id=~"${datasource}", type=~"$type"}[5m])*300))
               |||
             )
             + prometheusQuery.withIntervalFactor(2)
             + prometheusQuery.withLegendFormat(|||
-              {{datasource_id}} (type:{{type}}, force:{{force_update}})
+              {{datasource_url}} (type:{{type}}, id:{{datasource_id}}, force:{{force_update}})
             |||)
           ])
           + timeSeriesPanel.panelOptions.withGridPos(6, 12, 0, 6)
@@ -215,12 +215,12 @@ dashboard.new('FDK Harvesting')
             prometheusQuery.new(
               'prometheus',
               |||
-                sum by (datasource_id, type, force_update, fdk_service, kubernetes_namespace) (floor(rate(harvest_removed_resources_count_total{kubernetes_namespace="$namespace", datasource_id=~"${datasource}", type=~"$type"}[5m])*300))
+                sum by (datasource_id, datasource_url, type, force_update, fdk_service, kubernetes_namespace) (floor(rate(harvest_removed_resources_count_total{kubernetes_namespace="$namespace", datasource_id=~"${datasource}", type=~"$type"}[5m])*300))
               |||
             )
             + prometheusQuery.withIntervalFactor(2)
             + prometheusQuery.withLegendFormat(|||
-              {{datasource_id}} (type:{{type}}, force:{{force_update}})
+              {{datasource_url}} (type:{{type}}, id:{{datasource_id}}, force:{{force_update}})
             |||)
           ])
           + timeSeriesPanel.panelOptions.withGridPos(6, 12, 12, 6)
@@ -253,12 +253,12 @@ dashboard.new('FDK Harvesting')
             prometheusQuery.new(
               'promehteus',
                 |||
-                    sum by (datasource_id, type, force_update, fdk_service, kubernetes_namespace) (rate(harvest_time_seconds_sum{kubernetes_namespace="$namespace", datasource_id=~"${datasource}", type=~"$type"}[5m])*300)
+                    sum by (datasource_id, datasource_url, type, force_update, fdk_service, kubernetes_namespace) (rate(harvest_time_seconds_sum{kubernetes_namespace="$namespace", datasource_id=~"${datasource}", type=~"$type"}[5m])*300)
                 |||
             )
             + prometheusQuery.withIntervalFactor(2)
             + prometheusQuery.withLegendFormat(|||
-              {{datasource_id}} (type:{{type}}, force:{{force_update}})
+              {{datasource_url}} (type:{{type}}, id:{{datasource_id}}, force:{{force_update}})
             |||)
           ])
         + {
