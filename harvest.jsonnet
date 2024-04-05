@@ -102,7 +102,11 @@ dashboard.new('FDK Harvesting')
 + dashboard.withPanels([
     timeSeriesPanel.new('Successful harvests')
         + timeSeriesPanel.fieldConfig.defaults.custom.withLineWidth(1)
+        + timeSeriesPanel.fieldConfig.defaults.custom.withDrawStyle("bars")
+        + timeSeriesPanel.fieldConfig.defaults.custom.withFillOpacity(100)
+        + timeSeriesPanel.fieldConfig.defaults.custom.withStacking({ mode: "normal", group: "A" })
         + timeSeriesPanel.queryOptions.withDatasource('prometheus', 'prometheus')
+        + timeSeriesPanel.queryOptions.withInterval('2m')
         + timeSeriesPanel.queryOptions.withTargets([
             prometheusQuery.new(
               'prometheus',
@@ -138,7 +142,11 @@ dashboard.new('FDK Harvesting')
 
     timeSeriesPanel.new('Failed harvests')
         + timeSeriesPanel.fieldConfig.defaults.custom.withLineWidth(1)
+        + timeSeriesPanel.fieldConfig.defaults.custom.withDrawStyle("bars")
+        + timeSeriesPanel.fieldConfig.defaults.custom.withFillOpacity(100)
+        + timeSeriesPanel.fieldConfig.defaults.custom.withStacking({ mode: "normal", group: "A" })
         + timeSeriesPanel.queryOptions.withDatasource('prometheus', 'prometheus')
+        + timeSeriesPanel.queryOptions.withInterval('2m')
         + timeSeriesPanel.queryOptions.withTargets([
             prometheusQuery.new(
               'prometheus',
@@ -174,7 +182,11 @@ dashboard.new('FDK Harvesting')
 
     timeSeriesPanel.new('Changed resources')
         + timeSeriesPanel.fieldConfig.defaults.custom.withLineWidth(1)
+        + timeSeriesPanel.fieldConfig.defaults.custom.withDrawStyle("bars")
+        + timeSeriesPanel.fieldConfig.defaults.custom.withFillOpacity(100)
+        + timeSeriesPanel.fieldConfig.defaults.custom.withStacking({ mode: "normal", group: "A" })
         + timeSeriesPanel.queryOptions.withDatasource('prometheus', 'prometheus')
+        + timeSeriesPanel.queryOptions.withInterval('2m')
         + timeSeriesPanel.queryOptions.withTargets([
             prometheusQuery.new(
               'prometheus',
@@ -210,7 +222,11 @@ dashboard.new('FDK Harvesting')
 
     timeSeriesPanel.new('Removed resources')
         + timeSeriesPanel.fieldConfig.defaults.custom.withLineWidth(1)
+        + timeSeriesPanel.fieldConfig.defaults.custom.withDrawStyle("bars")
+        + timeSeriesPanel.fieldConfig.defaults.custom.withFillOpacity(100)
+        + timeSeriesPanel.fieldConfig.defaults.custom.withStacking({ mode: "normal", group: "A" })
         + timeSeriesPanel.queryOptions.withDatasource('prometheus', 'prometheus')
+        + timeSeriesPanel.queryOptions.withInterval('2m')
         + timeSeriesPanel.queryOptions.withTargets([
             prometheusQuery.new(
               'prometheus',
@@ -249,6 +265,7 @@ dashboard.new('FDK Harvesting')
         + timeSeriesPanel.panelOptions.withGridPos(8, 24, 0, 12)
         + timeSeriesPanel.options.legend.withShowLegend(false)
         + timeSeriesPanel.queryOptions.withDatasource('prometheus', 'prometheus')
+        + timeSeriesPanel.queryOptions.withInterval('2m')
         + timeSeriesPanel.queryOptions.withTargets([
             prometheusQuery.new(
               'promehteus',
