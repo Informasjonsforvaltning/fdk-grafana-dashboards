@@ -4,7 +4,7 @@ printf "FDK Grafana Dashboards\n\n"
 printf "Loading environment variables\n"
 if [ -f .env ]
 then
-    export $(cat .env | xargs)
+    export $(cat .env | xargs) 2> /dev/null
 fi
 
 export GRAFANA_URL="${GRAFANA_SCHEME}://${GRAFANA_HOST}"
