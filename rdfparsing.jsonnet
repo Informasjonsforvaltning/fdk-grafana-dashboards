@@ -72,7 +72,7 @@ dashboard.new('FDK RDF Parsing')
    }]
  })
 + dashboard.withPanels([
-    timeSeriesPanel.new('Successful parsings per second')
+    timeSeriesPanel.new('Successful parsings')
         + timeSeriesPanel.fieldConfig.defaults.custom.withLineWidth(1)
         + timeSeriesPanel.fieldConfig.defaults.custom.withStacking({ mode: "normal", group: "A" })
         + timeSeriesPanel.queryOptions.withDatasource('prometheus', 'prometheus')
@@ -81,7 +81,7 @@ dashboard.new('FDK RDF Parsing')
             prometheusQuery.new(
               'prometheus',
               |||
-                sum by (type, kubernetes_namespace, fdk_service) (rate(rdf_parse_seconds_count{kubernetes_namespace="$namespace", type=~"$type"}[5m]))
+                sum by (type, kubernetes_namespace, fdk_service) (rate(rdf_parse_seconds_count{kubernetes_namespace="$namespace", type=~"$type"}[5m])*300)
               |||
             )
             + prometheusQuery.withIntervalFactor(2)
@@ -105,7 +105,7 @@ dashboard.new('FDK RDF Parsing')
         }
       },
 
-    timeSeriesPanel.new('Failed parsings per second')
+    timeSeriesPanel.new('Failed parsings')
         + timeSeriesPanel.fieldConfig.defaults.custom.withLineWidth(1)
         + timeSeriesPanel.fieldConfig.defaults.custom.withStacking({ mode: "normal", group: "A" })
         + timeSeriesPanel.queryOptions.withDatasource('prometheus', 'prometheus')
@@ -114,7 +114,7 @@ dashboard.new('FDK RDF Parsing')
             prometheusQuery.new(
               'prometheus',
               |||
-                sum by (type, fdk_service, kubernetes_namespace) (rate(rdf_parse_error{kubernetes_namespace="$namespace", type=~"$type"}[5m]))
+                sum by (type, fdk_service, kubernetes_namespace) (rate(rdf_parse_error{kubernetes_namespace="$namespace", type=~"$type"}[5m])*300)
               |||
             )
             + prometheusQuery.withIntervalFactor(2)

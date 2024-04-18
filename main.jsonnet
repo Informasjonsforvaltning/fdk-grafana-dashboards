@@ -9,6 +9,7 @@
     mqa: (import 'mqa.jsonnet'),
     nginx: (import 'nginx.jsonnet'),
     rabbit: (import 'rabbit.jsonnet'),
+    search: (import 'search.jsonnet'),
     trivy: (import 'trivy.jsonnet'),
   },
 }
