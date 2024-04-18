@@ -262,6 +262,8 @@ dashboard.new('FDK Harvesting')
 
     timeSeriesPanel.new('Harvest time in seconds')
         + timeSeriesPanel.fieldConfig.defaults.custom.withLineWidth(1)
+        + timeSeriesPanel.fieldConfig.defaults.custom.withShowPoints("never")
+        + timeSeriesPanel.fieldConfig.defaults.custom.withSpanNulls("true")
         + timeSeriesPanel.panelOptions.withGridPos(8, 24, 0, 12)
         + timeSeriesPanel.options.legend.withShowLegend(false)
         + timeSeriesPanel.queryOptions.withDatasource('prometheus', 'prometheus')
@@ -270,7 +272,7 @@ dashboard.new('FDK Harvesting')
             prometheusQuery.new(
               'promehteus',
                 |||
-                    sum by (datasource_id, datasource_url, type, force_update, fdk_service, kubernetes_namespace) (rate(harvest_time_seconds_sum{kubernetes_namespace="$namespace", datasource_id=~"${datasource}", type=~"$type"}[5m])*300)
+                    sum by (datasource_id, datasource_url, type, force_update, fdk_service, kubernetes_namespace) (rate(harvest_time_seconds_sum{kubernetes_namespace="$namespace", datasource_id=~"${datasource}", type=~"$type"}[5m])/rate(harvest_time_seconds_count{kubernetes_namespace="$namespace", datasource_id=~"${datasource}", type=~"$type"}[5m]))
                 |||
             )
             + prometheusQuery.withIntervalFactor(2)
