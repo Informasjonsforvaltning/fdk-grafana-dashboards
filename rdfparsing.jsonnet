@@ -74,6 +74,8 @@ dashboard.new('FDK RDF Parsing')
 + dashboard.withPanels([
     timeSeriesPanel.new('Successful parsings')
         + timeSeriesPanel.fieldConfig.defaults.custom.withLineWidth(1)
+        + timeSeriesPanel.fieldConfig.defaults.custom.withShowPoints("never")
+        + timeSeriesPanel.fieldConfig.defaults.custom.withSpanNulls("true")
         + timeSeriesPanel.fieldConfig.defaults.custom.withStacking({ mode: "normal", group: "A" })
         + timeSeriesPanel.queryOptions.withDatasource('prometheus', 'prometheus')
         + timeSeriesPanel.queryOptions.withInterval('2m')
@@ -107,6 +109,8 @@ dashboard.new('FDK RDF Parsing')
 
     timeSeriesPanel.new('Failed parsings')
         + timeSeriesPanel.fieldConfig.defaults.custom.withLineWidth(1)
+        + timeSeriesPanel.fieldConfig.defaults.custom.withShowPoints("never")
+        + timeSeriesPanel.fieldConfig.defaults.custom.withSpanNulls("true")
         + timeSeriesPanel.fieldConfig.defaults.custom.withStacking({ mode: "normal", group: "A" })
         + timeSeriesPanel.queryOptions.withDatasource('prometheus', 'prometheus')
         + timeSeriesPanel.queryOptions.withInterval('2m')
@@ -140,6 +144,8 @@ dashboard.new('FDK RDF Parsing')
 
     timeSeriesPanel.new('Parsing time in seconds')
         + timeSeriesPanel.fieldConfig.defaults.custom.withLineWidth(1)
+        + timeSeriesPanel.fieldConfig.defaults.custom.withShowPoints("never")
+        + timeSeriesPanel.fieldConfig.defaults.custom.withSpanNulls("true")
         + timeSeriesPanel.panelOptions.withGridPos(8, 24, 0, 12)
         + timeSeriesPanel.options.legend.withShowLegend(false)
         + timeSeriesPanel.queryOptions.withDatasource('prometheus', 'prometheus')
@@ -148,7 +154,7 @@ dashboard.new('FDK RDF Parsing')
             prometheusQuery.new(
               'promehteus',
                 |||
-                    sum by (type, fdk_service, kubernetes_namespace) (rate(rdf_parse_seconds_sum{kubernetes_namespace="$namespace", type=~"$type"}[5m])*300)
+                    sum by (type, fdk_service, kubernetes_namespace) (rate(rdf_parse_seconds_sum{kubernetes_namespace="$namespace", type=~"$type"}[5m])/rate(rdf_parse_seconds_count{kubernetes_namespace="$namespace", type=~"$type"}[5m]))
                 |||
             )
             + prometheusQuery.withIntervalFactor(2)
