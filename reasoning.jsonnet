@@ -9,7 +9,7 @@ local statPanel = g.panel.stat;
 local util = g.util;
 
 dashboard.new('FDK Reasoning')
-+ dashboard.withTags(['reasoning'])
++ dashboard.withTags(['reasoning','harvesting'])
 + dashboard.time.withFrom('now-12h')
 + dashboard.time.withTo('now')
 + dashboard.withTimezone('browser')
@@ -33,7 +33,7 @@ dashboard.new('FDK Reasoning')
      "options": [],
      "query": {
        "qryType": 1,
-       "query": "label_values(processed_messages,kubernetes_namespace)",
+       "query": "label_values(reasoning_seconds_sum,kubernetes_namespace)",
        "refId": "PrometheusVariableQueryEditor-VariableQuery"
      },
      "refresh": 1,
@@ -53,7 +53,7 @@ dashboard.new('FDK Reasoning')
        "type": "prometheus",
        "uid": "prometheus"
      },
-     "definition": "label_values(reasoning_count_total,type)",
+     "definition": "label_values(reasoning_seconds_sum,type)",
      "hide": 0,
      "includeAll": true,
      "multi": false,
@@ -61,7 +61,7 @@ dashboard.new('FDK Reasoning')
      "options": [],
      "query": {
        "qryType": 1,
-       "query": "label_values(reasoning_count_total,type)",
+       "query": "label_values(reasoning_seconds_sum,type)",
        "refId": "PrometheusVariableQueryEditor-VariableQuery"
      },
      "refresh": 1,
@@ -69,41 +69,13 @@ dashboard.new('FDK Reasoning')
      "skipUrlSync": false,
      "sort": 0,
      "type": "query"
-   },
-   {
-     "allValue": ".*",
-     "current": {
-       "selected": true,
-       "text": "All",
-       "value": "$__all"
-     },
-     "datasource": {
-       "type": "prometheus",
-       "uid": "prometheus"
-     },
-     "definition": "label_values({kubernetes_namespace=\"$namespace\", type=~\"$type\"},datasource_id)",
-     "hide": 0,
-     "includeAll": true,
-     "multi": false,
-     "name": "datasource",
-     "options": [],
-     "query": {
-       "qryType": 1,
-       "query": "label_values({kubernetes_namespace=\"$namespace\", type=~\"$type\"}, datasource_id)",
-       "refId": "PrometheusVariableQueryEditor-VariableQuery"
-     },
-     "refresh": 1,
-     "regex": "",
-     "skipUrlSync": false,
-     "sort": 2,
-     "type": "query"
    }]
  })
 + dashboard.withPanels([
-    timeSeriesPanel.new('Successful reasoning jobs')
+    timeSeriesPanel.new('Successful reasonings')
         + timeSeriesPanel.fieldConfig.defaults.custom.withLineWidth(1)
-        + timeSeriesPanel.fieldConfig.defaults.custom.withDrawStyle("bars")
-        + timeSeriesPanel.fieldConfig.defaults.custom.withFillOpacity(100)
+        + timeSeriesPanel.fieldConfig.defaults.custom.withShowPoints("never")
+        + timeSeriesPanel.fieldConfig.defaults.custom.withSpanNulls("true")
         + timeSeriesPanel.fieldConfig.defaults.custom.withStacking({ mode: "normal", group: "A" })
         + timeSeriesPanel.queryOptions.withDatasource('prometheus', 'prometheus')
         + timeSeriesPanel.queryOptions.withInterval('2m')
@@ -111,21 +83,34 @@ dashboard.new('FDK Reasoning')
             prometheusQuery.new(
               'prometheus',
               |||
-                sum by (type, kubernetes_namespace) (floor(rate(reasoning_count_total{kubernetes_namespace="$namespace", status="reasoning_success", datasource_id=~"${datasource}", type=~"$type"}[5m])*300))
+                sum by (type, kubernetes_namespace, fdk_service) (rate(reasoning_seconds_count{kubernetes_namespace="$namespace", type=~"$type"}[5m])*300)
               |||
             )
             + prometheusQuery.withIntervalFactor(2)
             + prometheusQuery.withLegendFormat(|||
-              (type:{{type}}, id:{{datasource_id}})
+              {{type}}
             |||)
           ])
           + timeSeriesPanel.panelOptions.withGridPos(6, 12, 0, 0)
-          + timeSeriesPanel.options.legend.withShowLegend(false),
+          + timeSeriesPanel.options.legend.withShowLegend(false)
+        + {
+          fieldConfig+: {
+            defaults+: {
+              links: [
+                {
+                  targetBlank: true,
+                  title: 'View in Log Explorer',
+                  url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
+                }
+              ]
+           }
+        }
+      },
 
-    timeSeriesPanel.new('Failed reasoning jobs')
+    timeSeriesPanel.new('Failed reasonings')
         + timeSeriesPanel.fieldConfig.defaults.custom.withLineWidth(1)
-        + timeSeriesPanel.fieldConfig.defaults.custom.withDrawStyle("bars")
-        + timeSeriesPanel.fieldConfig.defaults.custom.withFillOpacity(100)
+        + timeSeriesPanel.fieldConfig.defaults.custom.withShowPoints("never")
+        + timeSeriesPanel.fieldConfig.defaults.custom.withSpanNulls("true")
         + timeSeriesPanel.fieldConfig.defaults.custom.withStacking({ mode: "normal", group: "A" })
         + timeSeriesPanel.queryOptions.withDatasource('prometheus', 'prometheus')
         + timeSeriesPanel.queryOptions.withInterval('2m')
@@ -133,16 +118,29 @@ dashboard.new('FDK Reasoning')
             prometheusQuery.new(
               'prometheus',
               |||
-                sum by (type, kubernetes_namespace) (floor(rate(reasoning_count_total{kubernetes_namespace="$namespace", status="reasoning_error", datasource_id=~"${datasource}", type=~"$type"}[5m])*300))
+                sum by (type, fdk_service, kubernetes_namespace) (rate(reasoning_error{kubernetes_namespace="$namespace", type=~"$type"}[5m])*300)
               |||
             )
             + prometheusQuery.withIntervalFactor(2)
             + prometheusQuery.withLegendFormat(|||
-              (type:{{type}}, id:{{datasource_id}})
+              {{type}}
             |||)
           ])
         + timeSeriesPanel.panelOptions.withGridPos(6, 12, 12, 0)
-        + timeSeriesPanel.options.legend.withShowLegend(false),
+        + timeSeriesPanel.options.legend.withShowLegend(false)
+        + {
+          fieldConfig+: {
+            defaults+: {
+              links: [
+                {
+                  targetBlank: true,
+                  title: 'View in Log Explorer',
+                  url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT%0Aseverity%3DERROR;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
+                }
+              ]
+           }
+        }
+      },
 
     timeSeriesPanel.new('Reasoning time in seconds')
         + timeSeriesPanel.fieldConfig.defaults.custom.withLineWidth(1)
@@ -156,12 +154,25 @@ dashboard.new('FDK Reasoning')
             prometheusQuery.new(
               'promehteus',
                 |||
-                    sum by (type, kubernetes_namespace) (rate(reasoning_time_seconds_sum{kubernetes_namespace="$namespace", type=~"$type"}[5m])/rate(reasoning_time_seconds_count{kubernetes_namespace="$namespace", type=~"$type"}[5m]))
+                    sum by (type, fdk_service, kubernetes_namespace) (rate(reasoning_seconds_sum{kubernetes_namespace="$namespace", type=~"$type"}[5m])/rate(reasoning_seconds_count{kubernetes_namespace="$namespace", type=~"$type"}[5m]))
                 |||
             )
             + prometheusQuery.withIntervalFactor(2)
             + prometheusQuery.withLegendFormat(|||
-              (type:{{type}}, id:{{datasource_id}})
+              {{type}}
             |||)
           ])
+        + {
+              fieldConfig+: {
+                defaults+: {
+                  links: [
+                    {
+                      targetBlank: true,
+                      title: 'View in Log Explorer',
+                      url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
+                    }
+                  ]
+               }
+            }
+          },
 ])
