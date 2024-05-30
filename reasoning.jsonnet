@@ -175,4 +175,106 @@ dashboard.new('FDK Reasoning')
                }
             }
           },
+    
+    timeSeriesPanel.new('Reasoning deduction time in seconds')
+        + timeSeriesPanel.fieldConfig.defaults.custom.withLineWidth(1)
+        + timeSeriesPanel.fieldConfig.defaults.custom.withShowPoints("never")
+        + timeSeriesPanel.fieldConfig.defaults.custom.withSpanNulls("true")
+        + timeSeriesPanel.panelOptions.withGridPos(8, 24, 0, 24)
+        + timeSeriesPanel.options.legend.withShowLegend(false)
+        + timeSeriesPanel.queryOptions.withDatasource('prometheus', 'prometheus')
+        + timeSeriesPanel.queryOptions.withInterval('2m')
+        + timeSeriesPanel.queryOptions.withTargets([
+            prometheusQuery.new(
+              'promehteus',
+                |||
+                    sum by (type, fdk_service, kubernetes_namespace) (rate(reasoning_deduction_seconds_sum{kubernetes_namespace="$namespace", type=~"$type"}[5m])/rate(reasoning_seconds_count{kubernetes_namespace="$namespace", type=~"$type"}[5m]))
+                |||
+            )
+            + prometheusQuery.withIntervalFactor(2)
+            + prometheusQuery.withLegendFormat(|||
+              {{type}}
+            |||)
+          ])
+        + {
+              fieldConfig+: {
+                defaults+: {
+                  links: [
+                    {
+                      targetBlank: true,
+                      title: 'View in Log Explorer',
+                      url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
+                    }
+                  ]
+               }
+            }
+          },
+    timeSeriesPanel.new('Reasoning organization time in seconds')
+        + timeSeriesPanel.fieldConfig.defaults.custom.withLineWidth(1)
+        + timeSeriesPanel.fieldConfig.defaults.custom.withShowPoints("never")
+        + timeSeriesPanel.fieldConfig.defaults.custom.withSpanNulls("true")
+        + timeSeriesPanel.panelOptions.withGridPos(8, 24, 0, 36)
+        + timeSeriesPanel.options.legend.withShowLegend(false)
+        + timeSeriesPanel.queryOptions.withDatasource('prometheus', 'prometheus')
+        + timeSeriesPanel.queryOptions.withInterval('2m')
+        + timeSeriesPanel.queryOptions.withTargets([
+            prometheusQuery.new(
+              'promehteus',
+                |||
+                    sum by (type, fdk_service, kubernetes_namespace) (rate(reasoning_organization_seconds_sum{kubernetes_namespace="$namespace", type=~"$type"}[5m])/rate(reasoning_seconds_count{kubernetes_namespace="$namespace", type=~"$type"}[5m]))
+                |||
+            )
+            + prometheusQuery.withIntervalFactor(2)
+            + prometheusQuery.withLegendFormat(|||
+              {{type}}
+            |||)
+          ])
+        + {
+              fieldConfig+: {
+                defaults+: {
+                  links: [
+                    {
+                      targetBlank: true,
+                      title: 'View in Log Explorer',
+                      url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
+                    }
+                  ]
+               }
+            }
+          },
+    
+    timeSeriesPanel.new('Reasoning reference-data time in seconds')
+        + timeSeriesPanel.fieldConfig.defaults.custom.withLineWidth(1)
+        + timeSeriesPanel.fieldConfig.defaults.custom.withShowPoints("never")
+        + timeSeriesPanel.fieldConfig.defaults.custom.withSpanNulls("true")
+        + timeSeriesPanel.panelOptions.withGridPos(8, 24, 0, 48)
+        + timeSeriesPanel.options.legend.withShowLegend(false)
+        + timeSeriesPanel.queryOptions.withDatasource('prometheus', 'prometheus')
+        + timeSeriesPanel.queryOptions.withInterval('2m')
+        + timeSeriesPanel.queryOptions.withTargets([
+            prometheusQuery.new(
+              'promehteus',
+                |||
+                    sum by (type, fdk_service, kubernetes_namespace) (rate(reasoning_reference_data_seconds_sum{kubernetes_namespace="$namespace", type=~"$type"}[5m])/rate(reasoning_seconds_count{kubernetes_namespace="$namespace", type=~"$type"}[5m]))
+                |||
+            )
+            + prometheusQuery.withIntervalFactor(2)
+            + prometheusQuery.withLegendFormat(|||
+              {{type}}
+            |||)
+          ])
+        + {
+              fieldConfig+: {
+                defaults+: {
+                  links: [
+                    {
+                      targetBlank: true,
+                      title: 'View in Log Explorer',
+                      url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
+                    }
+                  ]
+               }
+            }
+          },      
+
 ])
