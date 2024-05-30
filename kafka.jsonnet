@@ -26,7 +26,7 @@ dashboard.new(
     showPoints='never',
   ).addTarget(
     prometheus.target(
-      'sum(rate(kafka_topic_partition_current_offset{topic=~"$topic"}[3m])*180) by (topic)',
+      'sum(rate(kafka_topic_partition_current_offset{topic=~"$topic"}[3m])) by (topic)',
       datasource='prometheus',
       intervalFactor=1,
       interval='1s',
@@ -46,7 +46,7 @@ dashboard.new(
   )
   .addTarget(
     prometheus.target(
-      'sum(rate(kafka_consumergroup_current_offset{topic=~"$topic"}[3m])*180) by (consumergroup, topic)',
+      'sum(rate(kafka_consumergroup_current_offset{topic=~"$topic"}[3m])) by (consumergroup, topic)',
       datasource='prometheus',
       intervalFactor=1,
       interval='1s',
