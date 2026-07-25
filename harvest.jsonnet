@@ -25,7 +25,7 @@ dashboard.new('FDK Harvesting')
        "type": "prometheus",
        "uid": "prometheus"
      },
-     "definition": "label_values(processed_messages,kubernetes_namespace)",
+     "definition": "label_values(harvest_count_total,kubernetes_namespace)",
      "hide": 0,
      "includeAll": false,
      "multi": false,
@@ -33,7 +33,7 @@ dashboard.new('FDK Harvesting')
      "options": [],
      "query": {
        "qryType": 1,
-       "query": "label_values(processed_messages,kubernetes_namespace)",
+       "query": "label_values(harvest_count_total,kubernetes_namespace)",
        "refId": "PrometheusVariableQueryEditor-VariableQuery"
      },
      "refresh": 1,
@@ -81,7 +81,7 @@ dashboard.new('FDK Harvesting')
        "type": "prometheus",
        "uid": "prometheus"
      },
-     "definition": "label_values({kubernetes_namespace=\"$namespace\", type=~\"$type\"},datasource_id)",
+     "definition": "label_values(harvest_count_total{kubernetes_namespace=\"$namespace\", type=~\"$type\"},datasource_id)",
      "hide": 0,
      "includeAll": true,
      "multi": false,
@@ -89,7 +89,7 @@ dashboard.new('FDK Harvesting')
      "options": [],
      "query": {
        "qryType": 1,
-       "query": "label_values({kubernetes_namespace=\"$namespace\", type=~\"$type\"}, datasource_id)",
+       "query": "label_values(harvest_count_total{kubernetes_namespace=\"$namespace\", type=~\"$type\"}, datasource_id)",
        "refId": "PrometheusVariableQueryEditor-VariableQuery"
      },
      "refresh": 1,
@@ -128,7 +128,7 @@ dashboard.new('FDK Harvesting')
                 {
                   targetBlank: true,
                   title: 'View in Log Explorer',
-                  url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
+                  url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22fdk-harvester%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
                 },
                 {
                   targetBlank: false,
@@ -168,7 +168,7 @@ dashboard.new('FDK Harvesting')
                 {
                   targetBlank: true,
                   title: 'View in Log Explorer',
-                  url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT%0Aseverity%3DERROR;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
+                  url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22fdk-harvester%22%20severity%3E%3DDEFAULT%0Aseverity%3DERROR;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
                 },
                 {
                   targetBlank: false,
@@ -208,7 +208,7 @@ dashboard.new('FDK Harvesting')
                     {
                       targetBlank: true,
                       title: 'View in Log Explorer',
-                      url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
+                      url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22fdk-harvester%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
                     },
                     {
                       targetBlank: false,
@@ -248,7 +248,7 @@ dashboard.new('FDK Harvesting')
                     {
                       targetBlank: true,
                       title: 'View in Log Explorer',
-                      url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
+                      url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22fdk-harvester%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
                     },
                     {
                       targetBlank: false,
@@ -262,15 +262,16 @@ dashboard.new('FDK Harvesting')
 
     timeSeriesPanel.new('Harvest time in seconds')
         + timeSeriesPanel.fieldConfig.defaults.custom.withLineWidth(1)
-        + timeSeriesPanel.fieldConfig.defaults.custom.withShowPoints("never")
-        + timeSeriesPanel.fieldConfig.defaults.custom.withSpanNulls("true")
+        + timeSeriesPanel.fieldConfig.defaults.custom.withDrawStyle("bars")
+        + timeSeriesPanel.fieldConfig.defaults.custom.withFillOpacity(100)
+        + timeSeriesPanel.fieldConfig.defaults.custom.withStacking({ mode: "normal", group: "A" })
         + timeSeriesPanel.panelOptions.withGridPos(8, 24, 0, 12)
         + timeSeriesPanel.options.legend.withShowLegend(false)
         + timeSeriesPanel.queryOptions.withDatasource('prometheus', 'prometheus')
         + timeSeriesPanel.queryOptions.withInterval('2m')
         + timeSeriesPanel.queryOptions.withTargets([
             prometheusQuery.new(
-              'promehteus',
+              'prometheus',
                 |||
                     sum by (datasource_id, datasource_url, type, force_update, fdk_service, kubernetes_namespace) (rate(harvest_time_seconds_sum{kubernetes_namespace="$namespace", datasource_id=~"${datasource}", type=~"$type"}[5m])/rate(harvest_time_seconds_count{kubernetes_namespace="$namespace", datasource_id=~"${datasource}", type=~"$type"}[5m]))
                 |||
@@ -287,7 +288,7 @@ dashboard.new('FDK Harvesting')
                     {
                       targetBlank: true,
                       title: 'View in Log Explorer',
-                      url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
+                      url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22fdk-harvester%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
                     },
                     {
                       targetBlank: false,
