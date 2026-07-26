@@ -5,6 +5,212 @@ local timeseries_panel = import 'github.com/rhowe/grafonnet-lib/grafonnet/timese
 local prometheus = grafana.prometheus;
 local template = grafana.template;
 
+local ownOrgs = 'informasjonsforvaltning|fellesdatakatalog';
+local ownImagesSelector = 'image_repository=~"(%s)/.*"' % ownOrgs;
+local otherImagesSelector = 'image_repository!~"(%s)/.*"' % ownOrgs;
+
+local vulnerabilityTable(title, selector) =
+  table_panel.new(
+    title=title,
+    datasource='prometheus',
+  ).addTarget(
+    prometheus.target(
+      'sum(trivy_image_vulnerabilities{%s}) by (image_registry, image_repository, image_tag)' % selector,
+      datasource='prometheus',
+      format='table',
+      instant=true,
+    )
+  ).addTarget(
+    prometheus.target(
+      'max(trivy_image_vulnerabilities{severity="Critical", %s}) by (image_registry, image_repository, image_tag)' % selector,
+      datasource='prometheus',
+      format='table',
+      instant=true,
+    )
+  ).addTarget(
+    prometheus.target(
+      'max(trivy_image_vulnerabilities{severity="High", %s}) by (image_registry, image_repository, image_tag)' % selector,
+      datasource='prometheus',
+      format='table',
+      instant=true,
+    )
+  ).addOverride(
+    matcher={
+      id: 'byName',
+      options: 'image_registry',
+    },
+    properties=[
+      {
+        id: 'displayName',
+        value: 'Registry',
+      },
+      {
+        id: 'custom.width',
+        value: 150,
+      },
+    ],
+  ).addOverride(
+    matcher={
+      id: 'byName',
+      options: 'image_repository',
+    },
+    properties=[
+      {
+        id: 'displayName',
+        value: 'Repository',
+      },
+      {
+        id: 'custom.width',
+        value: 300,
+      },
+    ],
+  ).addOverride(
+    matcher={
+      id: 'byName',
+      options: 'image_tag',
+    },
+    properties=[
+      {
+        id: 'displayName',
+        value: 'Tag',
+      },
+      {
+        id: 'custom.width',
+        value: 360,
+      },
+    ],
+  ).addOverride(
+    matcher={
+      id: 'byName',
+      options: 'Value #A',
+    },
+    properties=[
+      {
+        id: 'displayName',
+        value: 'TOTAL',
+      },
+      {
+        id: 'custom.align',
+        value: 'left',
+      },
+      {
+        id: 'custom.width',
+        value: 80,
+      },
+    ],
+  ).addOverride(
+    matcher={
+      id: 'byName',
+      options: 'Value #B',
+    },
+    properties=[
+      {
+        id: 'displayName',
+        value: 'CRITICAL',
+      },
+      {
+        id: 'custom.displayMode',
+        value: 'gradient-gauge',
+      },
+      {
+        id: 'max',
+        value: 20,
+      },
+      {
+        id: 'thresholds',
+        value: {
+          mode: 'absolute',
+          steps: [
+            {
+              color: 'rgba(50, 172, 45, 0.97)',
+              value: null,
+            },
+            {
+              color: 'rgba(237, 129, 40, 0.89)',
+              value: 5,
+            },
+            {
+              color: 'rgba(245, 54, 54, 0.9)',
+              value: 10,
+            },
+          ],
+        },
+      },
+    ],
+  ).addOverride(
+    matcher={
+      id: 'byName',
+      options: 'Value #C',
+    },
+    properties=[
+      {
+        id: 'displayName',
+        value: 'HIGH',
+      },
+      {
+        id: 'custom.displayMode',
+        value: 'gradient-gauge',
+      },
+      {
+        id: 'max',
+        value: 30,
+      },
+      {
+        id: 'thresholds',
+        value: {
+          mode: 'absolute',
+          steps: [
+            {
+              color: 'rgba(50, 172, 45, 0.97)',
+              value: null,
+            },
+            {
+              color: 'rgba(237, 129, 40, 0.89)',
+              value: 10,
+            },
+            {
+              color: 'rgba(245, 54, 54, 0.9)',
+              value: 20,
+            },
+          ],
+        },
+      },
+    ],
+  ).addOverride(
+    matcher={
+      id: 'byName',
+      options: 'Time',
+    },
+    properties=[
+      {
+        id: 'custom.hidden',
+        value: true,
+      },
+    ],
+  ) + {
+    transformations: [
+      {
+        id: 'merge',
+      },
+      {
+        id: 'sortBy',
+        options: {
+          sort: [
+            {
+              desc: true,
+              field: 'Value #B',
+            },
+          ],
+        },
+      },
+    ],
+    options: {
+      footer: {
+        enablePagination: true,
+      },
+    },
+  };
+
 dashboard.new(
   'Trivy',
   tags=['trivy'],
@@ -274,208 +480,25 @@ dashboard.new(
   }
 )
 .addPanel(
-  table_panel.new(
-    ''
-  ).addTarget(
-    prometheus.target(
-      'sum(trivy_image_vulnerabilities{}) by (image_registry, image_repository, image_tag)',
-      datasource='prometheus',
-      format='table',
-      instant=true,
-    )
-  ).addTarget(
-    prometheus.target(
-      'max(trivy_image_vulnerabilities{severity="Critical"}) by (image_registry, image_repository, image_tag)',
-      datasource='prometheus',
-      format='table',
-      instant=true,
-    )
-  ).addTarget(
-    prometheus.target(
-      'max(trivy_image_vulnerabilities{severity="High"}) by (image_registry, image_repository, image_tag)',
-      datasource='prometheus',
-      format='table',
-      instant=true,
-    )
-  ).addOverride(
-    matcher={
-      id: 'byName',
-      options: 'image_registry',
-    },
-    properties=[
-      {
-        id: 'displayName',
-        value: 'Registry',
-      },
-      {
-        id: 'custom.width',
-        value: 150,
-      },
-    ],
-  ).addOverride(
-    matcher={
-      id: 'byName',
-      options: 'image_repository',
-    },
-    properties=[
-      {
-        id: 'displayName',
-        value: 'Repository',
-      },
-      {
-        id: 'custom.width',
-        value: 300,
-      },
-    ],
-  ).addOverride(
-    matcher={
-      id: 'byName',
-      options: 'image_tag',
-    },
-    properties=[
-      {
-        id: 'displayName',
-        value: 'Tag',
-      },
-      {
-        id: 'custom.width',
-        value: 360,
-      },
-    ],
-  ).addOverride(
-    matcher={
-      id: 'byName',
-      options: 'Value #A',
-    },
-    properties=[
-      {
-        id: 'displayName',
-        value: 'TOTAL',
-      },
-      {
-        id: 'custom.align',
-        value: 'left',
-      },
-      {
-        id: 'custom.width',
-        value: 80,
-      },
-    ],
-  ).addOverride(
-    matcher={
-      id: 'byName',
-      options: 'Value #B',
-    },
-    properties=[
-      {
-        id: 'displayName',
-        value: 'CRITICAL',
-      },
-      {
-        id: 'custom.displayMode',
-        value: 'gradient-gauge',
-      },
-      {
-        id: 'max',
-        value: 20,
-      },
-      {
-        id: 'thresholds',
-        value: {
-          mode: 'absolute',
-          steps: [
-            {
-              color: 'rgba(50, 172, 45, 0.97)',
-              value: null,
-            },
-            {
-              color: 'rgba(237, 129, 40, 0.89)',
-              value: 5,
-            },
-            {
-              color: 'rgba(245, 54, 54, 0.9)',
-              value: 10,
-            },
-          ],
-        },
-      },
-    ],
-  ).addOverride(
-    matcher={
-      id: 'byName',
-      options: 'Value #C',
-    },
-    properties=[
-      {
-        id: 'displayName',
-        value: 'HIGH',
-      },
-      {
-        id: 'custom.displayMode',
-        value: 'gradient-gauge',
-      },
-      {
-        id: 'max',
-        value: 30,
-      },
-      {
-        id: 'thresholds',
-        value: {
-          mode: 'absolute',
-          steps: [
-            {
-              color: 'rgba(50, 172, 45, 0.97)',
-              value: null,
-            },
-            {
-              color: 'rgba(237, 129, 40, 0.89)',
-              value: 10,
-            },
-            {
-              color: 'rgba(245, 54, 54, 0.9)',
-              value: 20,
-            },
-          ],
-        },
-      },
-    ],
-  ).addOverride(
-    matcher={
-      id: 'byName',
-      options: 'Time',
-    },
-    properties=[
-      {
-        id: 'custom.hidden',
-        value: true,
-      },
-    ],
-  ) + {
-    transformations: [
-      {
-        id: 'merge',
-      },
-      {
-        id: 'sortBy',
-        options: {
-          sort: [
-            {
-              desc: true,
-              field: 'Value #B',
-            },
-          ],
-        },
-      },
-    ],
-    options: {
-      footer: {
-        enablePagination: true,
-      },
-    },
-  },
+  vulnerabilityTable(
+    'informasjonsforvaltning / fellesdatakatalog',
+    ownImagesSelector,
+  ),
   gridPos={
     x: 0,
-    y: 2,
+    y: 3,
+    w: 24,
+    h: 10,
+  }
+)
+.addPanel(
+  vulnerabilityTable(
+    'Other images',
+    otherImagesSelector,
+  ),
+  gridPos={
+    x: 0,
+    y: 4,
     w: 24,
     h: 10,
   }
