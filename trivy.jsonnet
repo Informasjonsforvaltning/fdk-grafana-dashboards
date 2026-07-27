@@ -434,7 +434,122 @@ dashboard.new(
     x: 18,
     y: 0,
     w: 6,
-    h: 6,
+    h: 10,
+  }
+)
+.addPanel(
+  grafana.statPanel.new(
+    'AVG CRITICAL / IMAGE',
+    unit='none',
+    decimals=1,
+    graphMode='none',
+    reducerFunction='last',
+  ).addTarget(
+    prometheus.target(
+      'sum(trivy_image_vulnerabilities{severity="Critical"}) / count(count by (image_repository) (trivy_image_vulnerabilities))',
+      datasource='prometheus',
+    )
+  ).addThreshold({
+    color: 'semi-dark-red',
+    value: null,
+  }),
+  gridPos={
+    x: 0,
+    y: 1,
+    w: 4,
+    h: 4,
+  }
+)
+.addPanel(
+  grafana.statPanel.new(
+    'AVG HIGH / IMAGE',
+    unit='none',
+    decimals=1,
+    graphMode='none',
+    reducerFunction='last',
+  ).addTarget(
+    prometheus.target(
+      'sum(trivy_image_vulnerabilities{severity="High"}) / count(count by (image_repository) (trivy_image_vulnerabilities))',
+      datasource='prometheus',
+    )
+  ).addThreshold({
+    color: 'semi-dark-orange',
+    value: null,
+  }),
+  gridPos={
+    x: 4,
+    y: 1,
+    w: 4,
+    h: 4,
+  }
+)
+.addPanel(
+  grafana.statPanel.new(
+    'AVG MEDIUM / IMAGE',
+    unit='none',
+    decimals=1,
+    graphMode='none',
+    reducerFunction='last',
+  ).addTarget(
+    prometheus.target(
+      'sum(trivy_image_vulnerabilities{severity="Medium"}) / count(count by (image_repository) (trivy_image_vulnerabilities))',
+      datasource='prometheus',
+    )
+  ).addThreshold({
+    color: 'semi-dark-yellow',
+    value: null,
+  }),
+  gridPos={
+    x: 8,
+    y: 1,
+    w: 4,
+    h: 4,
+  }
+)
+.addPanel(
+  grafana.statPanel.new(
+    'AVG LOW / IMAGE',
+    unit='none',
+    decimals=1,
+    graphMode='none',
+    reducerFunction='last',
+  ).addTarget(
+    prometheus.target(
+      'sum(trivy_image_vulnerabilities{severity="Low"}) / count(count by (image_repository) (trivy_image_vulnerabilities))',
+      datasource='prometheus',
+    )
+  ).addThreshold({
+    color: 'semi-dark-green',
+    value: null,
+  }),
+  gridPos={
+    x: 12,
+    y: 1,
+    w: 3,
+    h: 4,
+  }
+)
+.addPanel(
+  grafana.statPanel.new(
+    'AVG UNKNOWN / IMAGE',
+    unit='none',
+    decimals=1,
+    graphMode='none',
+    reducerFunction='last',
+  ).addTarget(
+    prometheus.target(
+      'sum(trivy_image_vulnerabilities{severity="Unknown"}) / count(count by (image_repository) (trivy_image_vulnerabilities))',
+      datasource='prometheus',
+    )
+  ).addThreshold({
+    color: 'semi-dark-blue',
+    value: null,
+  }),
+  gridPos={
+    x: 15,
+    y: 1,
+    w: 3,
+    h: 4,
   }
 )
 .addPanel(
@@ -453,7 +568,7 @@ dashboard.new(
     )
   ), gridPos={
     x: 0,
-    y: 1,
+    y: 2,
     w: 24,
     h: 6,
   }
@@ -474,7 +589,7 @@ dashboard.new(
     )
   ), gridPos={
     x: 0,
-    y: 2,
+    y: 3,
     w: 24,
     h: 6,
   }
@@ -486,7 +601,7 @@ dashboard.new(
   ),
   gridPos={
     x: 0,
-    y: 3,
+    y: 4,
     w: 24,
     h: 10,
   }
@@ -498,7 +613,7 @@ dashboard.new(
   ),
   gridPos={
     x: 0,
-    y: 4,
+    y: 5,
     w: 24,
     h: 10,
   }
