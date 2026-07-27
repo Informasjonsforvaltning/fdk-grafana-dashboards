@@ -1,4 +1,6 @@
 name: Deploy Dashboards
+permissions:
+  contents: read
 
 on:
   push:
