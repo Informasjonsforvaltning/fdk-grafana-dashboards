@@ -3,6 +3,7 @@ local g = import 'github.com/grafana/grafonnet/gen/grafonnet-latest/main.libsonn
 local dashboard = g.dashboard;
 local prometheusQuery = g.query.prometheus;
 local timeSeriesPanel = g.panel.timeSeries;
+local tablePanel = g.panel.table;
 
 local logLink = {
   targetBlank: true,
@@ -108,7 +109,7 @@ dashboard.new('FDK Dataset Preview')
         type: 'prometheus',
         uid: 'prometheus',
       },
-      definition: 'label_values(preview_count_total{kubernetes_namespace="$namespace"},format)',
+      definition: 'label_values(preview_count_total{kubernetes_namespace="$namespace", format!="none"},format)',
       hide: 0,
       includeAll: true,
       multi: false,
@@ -116,7 +117,7 @@ dashboard.new('FDK Dataset Preview')
       options: [],
       query: {
         qryType: 1,
-        query: 'label_values(preview_count_total{kubernetes_namespace="$namespace"},format)',
+        query: 'label_values(preview_count_total{kubernetes_namespace="$namespace", format!="none"},format)',
         refId: 'PrometheusVariableQueryEditor-VariableQuery',
       },
       refresh: 1,
@@ -132,7 +133,7 @@ dashboard.new('FDK Dataset Preview')
     'Successful preview requests',
     |||
       sum by (kubernetes_namespace, fdk_service) (
-        rate(preview_request_count_total{kubernetes_namespace="$namespace", status="success"}[5m]) * 300
+        rate(preview_request_count_total{kubernetes_namespace="$namespace", method="POST", status="success"}[5m]) * 300
       )
     |||,
     'success',
@@ -144,7 +145,7 @@ dashboard.new('FDK Dataset Preview')
     'Failed preview requests',
     |||
       sum by (error_type, kubernetes_namespace, fdk_service) (
-        rate(preview_request_count_total{kubernetes_namespace="$namespace", status="error"}[5m]) * 300
+        rate(preview_request_count_total{kubernetes_namespace="$namespace", method="POST", status="error"}[5m]) * 300
       )
     |||,
     '{{error_type}}',
@@ -292,17 +293,17 @@ dashboard.new('FDK Dataset Preview')
       prometheusQuery.new(
         'prometheus',
         |||
-          sum by (uri, status, method, kubernetes_namespace, fdk_service) (
+          sum by (status, method, kubernetes_namespace, fdk_service) (
             rate(http_server_requests_seconds_count{
               kubernetes_namespace="$namespace",
               application="fdk-dataset-preview-service",
-              uri!~"/actuator.*"
+              uri="/preview"
             }[5m]) * 300
           )
         |||
       )
       + prometheusQuery.withIntervalFactor(2)
-      + prometheusQuery.withLegendFormat('{{method}} {{uri}} {{status}}')
+      + prometheusQuery.withLegendFormat('{{method}} {{status}}')
     ])
     + timeSeriesPanel.panelOptions.withGridPos(6, 12, 0, 30)
     + timeSeriesPanel.options.legend.withShowLegend(true),
@@ -312,22 +313,65 @@ dashboard.new('FDK Dataset Preview')
   durationPanel(
     'HTTP request duration',
     |||
-      sum by (uri, method, kubernetes_namespace, fdk_service) (
+      sum by (method, kubernetes_namespace, fdk_service) (
         rate(http_server_requests_seconds_sum{
           kubernetes_namespace="$namespace",
           application="fdk-dataset-preview-service",
-          uri!~"/actuator.*"
+          uri="/preview"
         }[5m])
         /
         rate(http_server_requests_seconds_count{
           kubernetes_namespace="$namespace",
           application="fdk-dataset-preview-service",
-          uri!~"/actuator.*"
+          uri="/preview"
         }[5m])
       )
     |||,
-    '{{method}} {{uri}}',
+    '{{method}}',
     { h: 6, w: 12, x: 12, y: 30 },
     [logLink]
   ),
+
+  tablePanel.new('Top failing resource URLs')
+  + tablePanel.queryOptions.withDatasource('prometheus', 'prometheus')
+  + tablePanel.queryOptions.withTargets([
+    prometheusQuery.new(
+      'prometheus',
+      |||
+        topk(10,
+          sum by (resource_url, error_type) (
+            increase(preview_count_total{kubernetes_namespace="$namespace", status="error"}[$__range])
+          )
+        )
+      |||
+    )
+    + prometheusQuery.withFormat('table')
+    + prometheusQuery.withInstant()
+  ])
+  + tablePanel.queryOptions.withTransformations([
+    {
+      id: 'organize',
+      options: {
+        excludeByName: {
+          Time: true,
+          __name__: true,
+        },
+        renameByName: {
+          resource_url: 'Resource URL',
+          error_type: 'Error type',
+          Value: 'Failures',
+        },
+        indexByName: {
+          resource_url: 0,
+          error_type: 1,
+          Value: 2,
+        },
+      },
+    },
+  ])
+  + tablePanel.options.withSortBy([
+    tablePanel.options.sortBy.withDisplayName('Failures')
+    + tablePanel.options.sortBy.withDesc(),
+  ])
+  + tablePanel.panelOptions.withGridPos(8, 24, 0, 36),
 ])
