@@ -26,7 +26,10 @@ local withLogLinks(panel, links) =
     },
   };
 
-local ratePanel(title, expr, legend, gridPos, links) =
+// Preview traffic is sparse: rate()/increase() often stay empty when Prometheus
+// never observes a counter delta between two scrapes. Graph cumulative counter
+// values instead so single events still appear as steps.
+local counterPanel(title, expr, legend, gridPos, links) =
   withLogLinks(
     timeSeriesPanel.new(title)
     + timeSeriesPanel.fieldConfig.defaults.custom.withLineWidth(1)
@@ -45,7 +48,7 @@ local ratePanel(title, expr, legend, gridPos, links) =
     links
   );
 
-local durationPanel(title, expr, legend, gridPos, links) =
+local avgPanel(title, expr, legend, gridPos, links, unit='s') =
   withLogLinks(
     timeSeriesPanel.new(title)
     + timeSeriesPanel.fieldConfig.defaults.custom.withLineWidth(1)
@@ -60,7 +63,7 @@ local durationPanel(title, expr, legend, gridPos, links) =
     ])
     + timeSeriesPanel.panelOptions.withGridPos(gridPos.h, gridPos.w, gridPos.x, gridPos.y)
     + timeSeriesPanel.options.legend.withShowLegend(true)
-    + timeSeriesPanel.standardOptions.withUnit('s'),
+    + timeSeriesPanel.standardOptions.withUnit(unit),
     links
   );
 
@@ -129,11 +132,11 @@ dashboard.new('FDK Dataset Preview')
   ],
 })
 + dashboard.withPanels([
-  ratePanel(
+  counterPanel(
     'Successful preview requests',
     |||
       sum by (kubernetes_namespace, fdk_service) (
-        rate(preview_request_count_total{kubernetes_namespace="$namespace", method="POST", status="success"}[5m]) * 300
+        preview_request_count_total{kubernetes_namespace="$namespace", method="POST", status="success"}
       )
     |||,
     'success',
@@ -141,11 +144,11 @@ dashboard.new('FDK Dataset Preview')
     [logLink]
   ),
 
-  ratePanel(
+  counterPanel(
     'Failed preview requests',
     |||
       sum by (error_type, kubernetes_namespace, fdk_service) (
-        rate(preview_request_count_total{kubernetes_namespace="$namespace", method="POST", status="error"}[5m]) * 300
+        preview_request_count_total{kubernetes_namespace="$namespace", method="POST", status="error"}
       )
     |||,
     '{{error_type}}',
@@ -153,11 +156,11 @@ dashboard.new('FDK Dataset Preview')
     [errorLogLink]
   ),
 
-  ratePanel(
+  counterPanel(
     'Successful previews by format',
     |||
       sum by (format, kubernetes_namespace, fdk_service) (
-        rate(preview_count_total{kubernetes_namespace="$namespace", status="success", format=~"$format"}[5m]) * 300
+        preview_count_total{kubernetes_namespace="$namespace", status="success", format=~"$format"}
       )
     |||,
     '{{format}}',
@@ -165,11 +168,11 @@ dashboard.new('FDK Dataset Preview')
     [logLink]
   ),
 
-  ratePanel(
+  counterPanel(
     'Failed previews by error type',
     |||
       sum by (error_type, kubernetes_namespace, fdk_service) (
-        rate(preview_count_total{kubernetes_namespace="$namespace", status="error"}[5m]) * 300
+        preview_count_total{kubernetes_namespace="$namespace", status="error"}
       )
     |||,
     '{{error_type}}',
@@ -177,13 +180,15 @@ dashboard.new('FDK Dataset Preview')
     [errorLogLink]
   ),
 
-  durationPanel(
+  avgPanel(
     'Preview duration',
     |||
       sum by (format, kubernetes_namespace, fdk_service) (
-        rate(preview_duration_seconds_sum{kubernetes_namespace="$namespace", format=~"$format"}[5m])
-        /
-        rate(preview_duration_seconds_count{kubernetes_namespace="$namespace", format=~"$format"}[5m])
+        preview_duration_seconds_sum{kubernetes_namespace="$namespace", format=~"$format"}
+      )
+      /
+      sum by (format, kubernetes_namespace, fdk_service) (
+        preview_duration_seconds_count{kubernetes_namespace="$namespace", format=~"$format"}
       )
     |||,
     '{{format}}',
@@ -191,13 +196,15 @@ dashboard.new('FDK Dataset Preview')
     [logLink]
   ),
 
-  durationPanel(
+  avgPanel(
     'Download duration',
     |||
       sum by (status_code, kubernetes_namespace, fdk_service) (
-        rate(preview_download_duration_seconds_sum{kubernetes_namespace="$namespace"}[5m])
-        /
-        rate(preview_download_duration_seconds_count{kubernetes_namespace="$namespace"}[5m])
+        preview_download_duration_seconds_sum{kubernetes_namespace="$namespace"}
+      )
+      /
+      sum by (status_code, kubernetes_namespace, fdk_service) (
+        preview_download_duration_seconds_count{kubernetes_namespace="$namespace"}
       )
     |||,
     '{{status_code}}',
@@ -205,11 +212,11 @@ dashboard.new('FDK Dataset Preview')
     [logLink]
   ),
 
-  ratePanel(
+  counterPanel(
     'Successful downloads',
     |||
       sum by (status_code, kubernetes_namespace, fdk_service) (
-        rate(preview_download_count_total{kubernetes_namespace="$namespace", status="success"}[5m]) * 300
+        preview_download_count_total{kubernetes_namespace="$namespace", status="success"}
       )
     |||,
     '{{status_code}}',
@@ -217,11 +224,11 @@ dashboard.new('FDK Dataset Preview')
     [logLink]
   ),
 
-  ratePanel(
+  counterPanel(
     'Failed downloads',
     |||
       sum by (status_code, kubernetes_namespace, fdk_service) (
-        rate(preview_download_count_total{kubernetes_namespace="$namespace", status="error"}[5m]) * 300
+        preview_download_count_total{kubernetes_namespace="$namespace", status="error"}
       )
     |||,
     '{{status_code}}',
@@ -229,102 +236,69 @@ dashboard.new('FDK Dataset Preview')
     [errorLogLink]
   ),
 
-  withLogLinks(
-    timeSeriesPanel.new('Download bytes')
-    + timeSeriesPanel.fieldConfig.defaults.custom.withLineWidth(1)
-    + timeSeriesPanel.fieldConfig.defaults.custom.withShowPoints('never')
-    + timeSeriesPanel.fieldConfig.defaults.custom.withSpanNulls('true')
-    + timeSeriesPanel.queryOptions.withDatasource('prometheus', 'prometheus')
-    + timeSeriesPanel.queryOptions.withInterval('2m')
-    + timeSeriesPanel.queryOptions.withTargets([
-      prometheusQuery.new(
-        'prometheus',
-        |||
-          sum by (kubernetes_namespace, fdk_service) (
-            rate(preview_download_bytes_total{kubernetes_namespace="$namespace"}[5m])
-          )
-        |||
+  avgPanel(
+    'Download bytes',
+    |||
+      sum by (kubernetes_namespace, fdk_service) (
+        preview_download_bytes_total{kubernetes_namespace="$namespace"}
       )
-      + prometheusQuery.withIntervalFactor(2)
-      + prometheusQuery.withLegendFormat('bytes/s')
-    ])
-    + timeSeriesPanel.panelOptions.withGridPos(6, 12, 0, 24)
-    + timeSeriesPanel.options.legend.withShowLegend(true)
-    + timeSeriesPanel.standardOptions.withUnit('Bps'),
+    |||,
+    'bytes',
+    { h: 6, w: 12, x: 0, y: 24 },
+    [logLink],
+    'bytes'
+  ),
+
+  avgPanel(
+    'Average preview file size',
+    |||
+      sum by (kubernetes_namespace, fdk_service) (
+        preview_file_size_bytes_sum{kubernetes_namespace="$namespace"}
+      )
+      /
+      sum by (kubernetes_namespace, fdk_service) (
+        preview_file_size_bytes_count{kubernetes_namespace="$namespace"}
+      )
+    |||,
+    'avg size',
+    { h: 6, w: 12, x: 12, y: 24 },
+    [logLink],
+    'bytes'
+  ),
+
+  counterPanel(
+    'HTTP requests',
+    |||
+      sum by (status, method, kubernetes_namespace, fdk_service) (
+        http_server_requests_seconds_count{
+          kubernetes_namespace="$namespace",
+          application="fdk-dataset-preview-service",
+          uri="/preview"
+        }
+      )
+    |||,
+    '{{method}} {{status}}',
+    { h: 6, w: 12, x: 0, y: 30 },
     [logLink]
   ),
 
-  withLogLinks(
-    timeSeriesPanel.new('Average preview file size')
-    + timeSeriesPanel.fieldConfig.defaults.custom.withLineWidth(1)
-    + timeSeriesPanel.fieldConfig.defaults.custom.withShowPoints('never')
-    + timeSeriesPanel.fieldConfig.defaults.custom.withSpanNulls('true')
-    + timeSeriesPanel.queryOptions.withDatasource('prometheus', 'prometheus')
-    + timeSeriesPanel.queryOptions.withInterval('2m')
-    + timeSeriesPanel.queryOptions.withTargets([
-      prometheusQuery.new(
-        'prometheus',
-        |||
-          sum by (kubernetes_namespace, fdk_service) (
-            rate(preview_file_size_bytes_sum{kubernetes_namespace="$namespace"}[5m])
-            /
-            rate(preview_file_size_bytes_count{kubernetes_namespace="$namespace"}[5m])
-          )
-        |||
-      )
-      + prometheusQuery.withIntervalFactor(2)
-      + prometheusQuery.withLegendFormat('avg size')
-    ])
-    + timeSeriesPanel.panelOptions.withGridPos(6, 12, 12, 24)
-    + timeSeriesPanel.options.legend.withShowLegend(true)
-    + timeSeriesPanel.standardOptions.withUnit('bytes'),
-    [logLink]
-  ),
-
-  withLogLinks(
-    timeSeriesPanel.new('HTTP requests')
-    + timeSeriesPanel.fieldConfig.defaults.custom.withLineWidth(1)
-    + timeSeriesPanel.fieldConfig.defaults.custom.withShowPoints('never')
-    + timeSeriesPanel.fieldConfig.defaults.custom.withSpanNulls('true')
-    + timeSeriesPanel.fieldConfig.defaults.custom.withStacking({ mode: 'normal', group: 'A' })
-    + timeSeriesPanel.queryOptions.withDatasource('prometheus', 'prometheus')
-    + timeSeriesPanel.queryOptions.withInterval('2m')
-    + timeSeriesPanel.queryOptions.withTargets([
-      prometheusQuery.new(
-        'prometheus',
-        |||
-          sum by (status, method, kubernetes_namespace, fdk_service) (
-            rate(http_server_requests_seconds_count{
-              kubernetes_namespace="$namespace",
-              application="fdk-dataset-preview-service",
-              uri="/preview"
-            }[5m]) * 300
-          )
-        |||
-      )
-      + prometheusQuery.withIntervalFactor(2)
-      + prometheusQuery.withLegendFormat('{{method}} {{status}}')
-    ])
-    + timeSeriesPanel.panelOptions.withGridPos(6, 12, 0, 30)
-    + timeSeriesPanel.options.legend.withShowLegend(true),
-    [logLink]
-  ),
-
-  durationPanel(
+  avgPanel(
     'HTTP request duration',
     |||
       sum by (method, kubernetes_namespace, fdk_service) (
-        rate(http_server_requests_seconds_sum{
+        http_server_requests_seconds_sum{
           kubernetes_namespace="$namespace",
           application="fdk-dataset-preview-service",
           uri="/preview"
-        }[5m])
-        /
-        rate(http_server_requests_seconds_count{
+        }
+      )
+      /
+      sum by (method, kubernetes_namespace, fdk_service) (
+        http_server_requests_seconds_count{
           kubernetes_namespace="$namespace",
           application="fdk-dataset-preview-service",
           uri="/preview"
-        }[5m])
+        }
       )
     |||,
     '{{method}}',
@@ -340,13 +314,14 @@ dashboard.new('FDK Dataset Preview')
       |||
         topk(10,
           sum by (resource_url, error_type) (
-            increase(preview_count_total{kubernetes_namespace="$namespace", status="error"}[$__range])
+            preview_count_total{kubernetes_namespace="$namespace", status="error"}
           )
         )
       |||
     )
     + prometheusQuery.withFormat('table')
     + prometheusQuery.withInstant()
+    + prometheusQuery.withRange(false)
   ])
   + tablePanel.queryOptions.withTransformations([
     {
@@ -359,11 +334,13 @@ dashboard.new('FDK Dataset Preview')
         renameByName: {
           resource_url: 'Resource URL',
           error_type: 'Error type',
+          'Value #A': 'Failures',
           Value: 'Failures',
         },
         indexByName: {
           resource_url: 0,
           error_type: 1,
+          'Value #A': 2,
           Value: 2,
         },
       },
