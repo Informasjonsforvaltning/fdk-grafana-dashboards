@@ -299,4 +299,247 @@ dashboard.new('FDK Harvesting')
                }
             }
           },
+
+    timeSeriesPanel.new('Harvest errors by category')
+        + timeSeriesPanel.fieldConfig.defaults.custom.withLineWidth(1)
+        + timeSeriesPanel.fieldConfig.defaults.custom.withDrawStyle("bars")
+        + timeSeriesPanel.fieldConfig.defaults.custom.withFillOpacity(100)
+        + timeSeriesPanel.fieldConfig.defaults.custom.withStacking({ mode: "normal", group: "A" })
+        + timeSeriesPanel.queryOptions.withDatasource('prometheus', 'prometheus')
+        + timeSeriesPanel.queryOptions.withInterval('2m')
+        + timeSeriesPanel.queryOptions.withTargets([
+            prometheusQuery.new(
+              'prometheus',
+              |||
+                sum by (category, type, kubernetes_namespace, fdk_service) (floor(rate(harvest_error_count_total{kubernetes_namespace="$namespace", type=~"$type"}[5m])*300))
+              |||
+            )
+            + prometheusQuery.withIntervalFactor(2)
+            + prometheusQuery.withLegendFormat(|||
+              {{category}} (type:{{type}})
+            |||)
+          ])
+        + timeSeriesPanel.panelOptions.withGridPos(6, 12, 0, 20)
+        + timeSeriesPanel.options.legend.withShowLegend(true)
+        + {
+          fieldConfig+: {
+            defaults+: {
+              links: [
+                {
+                  targetBlank: true,
+                  title: 'View in Log Explorer',
+                  url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22fdk-harvester%22%20severity%3E%3DDEFAULT%0Aseverity%3DERROR;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
+                }
+              ]
+           }
+        }
+      },
+
+    statPanel.new('Circuit breaker open')
+        + statPanel.panelOptions.withGridPos(6, 6, 12, 20)
+        + statPanel.options.withGraphMode('none')
+        + statPanel.options.withColorMode('background')
+        + statPanel.options.reduceOptions.withCalcs(['lastNotNull'])
+        + statPanel.options.reduceOptions.withValues(false)
+        + statPanel.queryOptions.withDatasource('prometheus', 'prometheus')
+        + statPanel.queryOptions.withTargets([
+            prometheusQuery.new(
+              'prometheus',
+              |||
+                max(resilience4j_circuitbreaker_state{kubernetes_namespace="$namespace", name="harvest-cb", state="open"})
+              |||
+            )
+            + prometheusQuery.withLegendFormat('open')
+          ])
+        + statPanel.standardOptions.thresholds.withMode('absolute')
+        + statPanel.standardOptions.thresholds.withSteps([
+            statPanel.standardOptions.threshold.step.withColor('green')
+            + statPanel.standardOptions.threshold.step.withValue(null),
+            statPanel.standardOptions.threshold.step.withColor('red')
+            + statPanel.standardOptions.threshold.step.withValue(1),
+          ])
+        + statPanel.standardOptions.withMappings([
+            {
+              type: 'value',
+              options: {
+                '0': { text: 'Closed', color: 'green', index: 0 },
+                '1': { text: 'Open', color: 'red', index: 1 },
+              },
+            },
+          ]),
+
+    statPanel.new('Kafka listener paused')
+        + statPanel.panelOptions.withGridPos(6, 6, 18, 20)
+        + statPanel.options.withGraphMode('none')
+        + statPanel.options.withColorMode('background')
+        + statPanel.options.reduceOptions.withCalcs(['lastNotNull'])
+        + statPanel.options.reduceOptions.withValues(false)
+        + statPanel.queryOptions.withDatasource('prometheus', 'prometheus')
+        + statPanel.queryOptions.withTargets([
+            prometheusQuery.new(
+              'prometheus',
+              |||
+                max(kafka_listener_paused{kubernetes_namespace="$namespace", listener="harvest"})
+              |||
+            )
+            + prometheusQuery.withLegendFormat('paused')
+          ])
+        + statPanel.standardOptions.thresholds.withMode('absolute')
+        + statPanel.standardOptions.thresholds.withSteps([
+            statPanel.standardOptions.threshold.step.withColor('green')
+            + statPanel.standardOptions.threshold.step.withValue(null),
+            statPanel.standardOptions.threshold.step.withColor('orange')
+            + statPanel.standardOptions.threshold.step.withValue(1),
+          ])
+        + statPanel.standardOptions.withMappings([
+            {
+              type: 'value',
+              options: {
+                '0': { text: 'Running', color: 'green', index: 0 },
+                '1': { text: 'Paused', color: 'orange', index: 1 },
+              },
+            },
+          ]),
+
+    timeSeriesPanel.new('Harvest event processing')
+        + timeSeriesPanel.fieldConfig.defaults.custom.withLineWidth(1)
+        + timeSeriesPanel.fieldConfig.defaults.custom.withDrawStyle("bars")
+        + timeSeriesPanel.fieldConfig.defaults.custom.withFillOpacity(100)
+        + timeSeriesPanel.fieldConfig.defaults.custom.withStacking({ mode: "normal", group: "A" })
+        + timeSeriesPanel.queryOptions.withDatasource('prometheus', 'prometheus')
+        + timeSeriesPanel.queryOptions.withInterval('2m')
+        + timeSeriesPanel.queryOptions.withTargets([
+            prometheusQuery.new(
+              'prometheus',
+              |||
+                sum by (phase, result, kubernetes_namespace, fdk_service) (floor(rate(harvest_event_processing_total{kubernetes_namespace="$namespace"}[5m])*300))
+              |||
+            )
+            + prometheusQuery.withIntervalFactor(2)
+            + prometheusQuery.withLegendFormat(|||
+              {{phase}}:{{result}}
+            |||)
+          ])
+        + timeSeriesPanel.panelOptions.withGridPos(6, 12, 0, 26)
+        + timeSeriesPanel.options.legend.withShowLegend(true)
+        + {
+          fieldConfig+: {
+            defaults+: {
+              links: [
+                {
+                  targetBlank: true,
+                  title: 'View in Log Explorer',
+                  url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22fdk-harvester%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
+                }
+              ]
+           }
+        }
+      },
+
+    timeSeriesPanel.new('Resource event publish')
+        + timeSeriesPanel.fieldConfig.defaults.custom.withLineWidth(1)
+        + timeSeriesPanel.fieldConfig.defaults.custom.withDrawStyle("bars")
+        + timeSeriesPanel.fieldConfig.defaults.custom.withFillOpacity(100)
+        + timeSeriesPanel.fieldConfig.defaults.custom.withStacking({ mode: "normal", group: "A" })
+        + timeSeriesPanel.queryOptions.withDatasource('prometheus', 'prometheus')
+        + timeSeriesPanel.queryOptions.withInterval('2m')
+        + timeSeriesPanel.queryOptions.withTargets([
+            prometheusQuery.new(
+              'prometheus',
+              |||
+                sum by (status, kind, type, kubernetes_namespace, fdk_service) (floor(rate(resource_event_publish_total{kubernetes_namespace="$namespace", type=~"$type"}[5m])*300))
+              |||
+            )
+            + prometheusQuery.withIntervalFactor(2)
+            + prometheusQuery.withLegendFormat(|||
+              {{kind}}:{{status}} (type:{{type}})
+            |||)
+          ])
+        + timeSeriesPanel.panelOptions.withGridPos(6, 12, 12, 26)
+        + timeSeriesPanel.options.legend.withShowLegend(true)
+        + {
+          fieldConfig+: {
+            defaults+: {
+              links: [
+                {
+                  targetBlank: true,
+                  title: 'View in Log Explorer',
+                  url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22fdk-harvester%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
+                }
+              ]
+           }
+        }
+      },
+
+    timeSeriesPanel.new('Circuit breaker not permitted calls')
+        + timeSeriesPanel.fieldConfig.defaults.custom.withLineWidth(1)
+        + timeSeriesPanel.fieldConfig.defaults.custom.withDrawStyle("bars")
+        + timeSeriesPanel.fieldConfig.defaults.custom.withFillOpacity(100)
+        + timeSeriesPanel.fieldConfig.defaults.custom.withStacking({ mode: "normal", group: "A" })
+        + timeSeriesPanel.queryOptions.withDatasource('prometheus', 'prometheus')
+        + timeSeriesPanel.queryOptions.withInterval('2m')
+        + timeSeriesPanel.queryOptions.withTargets([
+            prometheusQuery.new(
+              'prometheus',
+              |||
+                sum by (name, kubernetes_namespace, fdk_service) (floor(rate(resilience4j_circuitbreaker_not_permitted_calls_total{kubernetes_namespace="$namespace", name="harvest-cb"}[5m])*300))
+              |||
+            )
+            + prometheusQuery.withIntervalFactor(2)
+            + prometheusQuery.withLegendFormat(|||
+              {{name}}
+            |||)
+          ])
+        + timeSeriesPanel.panelOptions.withGridPos(6, 12, 0, 32)
+        + timeSeriesPanel.options.legend.withShowLegend(false)
+        + {
+          fieldConfig+: {
+            defaults+: {
+              links: [
+                {
+                  targetBlank: true,
+                  title: 'View in Log Explorer',
+                  url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22fdk-harvester%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
+                }
+              ]
+           }
+        }
+      },
+
+    timeSeriesPanel.new('Circuit breaker failure rate')
+        + timeSeriesPanel.fieldConfig.defaults.custom.withLineWidth(2)
+        + timeSeriesPanel.fieldConfig.defaults.custom.withDrawStyle("line")
+        + timeSeriesPanel.fieldConfig.defaults.custom.withFillOpacity(10)
+        + timeSeriesPanel.queryOptions.withDatasource('prometheus', 'prometheus')
+        + timeSeriesPanel.queryOptions.withInterval('2m')
+        + timeSeriesPanel.queryOptions.withTargets([
+            prometheusQuery.new(
+              'prometheus',
+              |||
+                max by (name, kubernetes_namespace, fdk_service) (resilience4j_circuitbreaker_failure_rate{kubernetes_namespace="$namespace", name="harvest-cb"})
+              |||
+            )
+            + prometheusQuery.withIntervalFactor(2)
+            + prometheusQuery.withLegendFormat(|||
+              {{name}}
+            |||)
+          ])
+        + timeSeriesPanel.panelOptions.withGridPos(6, 12, 12, 32)
+        + timeSeriesPanel.options.legend.withShowLegend(false)
+        + timeSeriesPanel.standardOptions.withUnit('percent')
+        + {
+          fieldConfig+: {
+            defaults+: {
+              max: 100,
+              min: 0,
+              links: [
+                {
+                  targetBlank: true,
+                  title: 'View in Log Explorer',
+                  url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22fdk-harvester%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
+                }
+              ]
+           }
+        }
+      },
 ])
