@@ -401,7 +401,7 @@ dashboard.new('FDK Harvesting')
             },
           ]),
 
-    timeSeriesPanel.new('Harvest event processing')
+    timeSeriesPanel.new('Kafka event processing')
         + timeSeriesPanel.fieldConfig.defaults.custom.withLineWidth(1)
         + timeSeriesPanel.fieldConfig.defaults.custom.withDrawStyle("bars")
         + timeSeriesPanel.fieldConfig.defaults.custom.withFillOpacity(100)
@@ -447,12 +447,12 @@ dashboard.new('FDK Harvesting')
             prometheusQuery.new(
               'prometheus',
               |||
-                sum by (status, kind, type, kubernetes_namespace, fdk_service) (floor(rate(resource_event_publish_total{kubernetes_namespace="$namespace", type=~"$type"}[5m])*300))
+                sum by (status, reason, kind, type, kubernetes_namespace, fdk_service) (floor(rate(resource_event_publish_total{kubernetes_namespace="$namespace", type=~"$type"}[5m])*300))
               |||
             )
             + prometheusQuery.withIntervalFactor(2)
             + prometheusQuery.withLegendFormat(|||
-              {{kind}}:{{status}} (type:{{type}})
+              {{kind}}:{{status}}/{{reason}} (type:{{type}})
             |||)
           ])
         + timeSeriesPanel.panelOptions.withGridPos(6, 12, 12, 26)
