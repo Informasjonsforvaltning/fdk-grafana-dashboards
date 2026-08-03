@@ -11,6 +11,7 @@ local statPanel = g.panel.stat;
 local prometheus = 'prometheus';
 local ns = 'kubernetes_namespace="$namespace"';
 local fdkService = 'fdk-resource-service';
+local svc = ns + ', fdk_service="' + fdkService + '"';
 local cbNameRegex = 'rdfParseConsumer|conceptConsumer|datasetConsumer|dataServiceConsumer|informationModelConsumer|serviceConsumer|eventConsumer';
 
 local logExplorerUrl =
@@ -153,7 +154,7 @@ dashboard.new('FDK Resource Service')
         type: 'prometheus',
         uid: 'prometheus',
       },
-      definition: 'label_values(spring_kafka_listener_seconds_count,kubernetes_namespace)',
+      definition: 'label_values(store_resource_jsonld_seconds_count,kubernetes_namespace)',
       hide: 0,
       includeAll: false,
       multi: false,
@@ -161,7 +162,7 @@ dashboard.new('FDK Resource Service')
       options: [],
       query: {
         qryType: 1,
-        query: 'label_values(spring_kafka_listener_seconds_count,kubernetes_namespace)',
+        query: 'label_values(store_resource_jsonld_seconds_count,kubernetes_namespace)',
         refId: 'PrometheusVariableQueryEditor-VariableQuery',
       },
       refresh: 1,
@@ -213,8 +214,8 @@ dashboard.new('FDK Resource Service')
     [
       query('max(union_graph_orders_pending{' + ns + '})', 'Pending', 'A'),
       query('max(union_graph_orders_processing{' + ns + '})', 'Processing', 'B'),
-      query('max(union_graph_orders_completed_total{' + ns + '})', 'Completed', 'C'),
-      query('max(union_graph_orders_failed_total{' + ns + '})', 'Failed', 'D'),
+      query('max(union_graph_orders_completed{' + ns + '})', 'Completed', 'C'),
+      query('max(union_graph_orders_failed{' + ns + '})', 'Failed', 'D'),
     ],
   )
   + statPanel.standardOptions.color.withMode('palette-classic')
@@ -240,61 +241,23 @@ dashboard.new('FDK Resource Service')
   withLogLink(
     tableLegend(
       stackedBarPanel(
-        'Spring Kafka listener',
+        'Resource events skipped',
         { h: 6, w: 12, x: 12, y: 6 },
         [
           rateQuery(
-            'sum by (result) (floor(rate(spring_kafka_listener_seconds_count{' + ns + '}[5m])*300))',
-            'listener:{{result}}',
+            'sum by (type, reason) (floor(rate(resource_events_skipped_total{' + ns + '}[5m])*300))',
+            '{{type}} / {{reason}}',
           ),
         ],
       ),
       ['sum', 'lastNotNull'],
-    ),
-  ),
-
-  withLogLink(
-    tableLegend(
-      stackedBarPanel(
-        'Event publish',
-        { h: 6, w: 12, x: 0, y: 12 },
-        [
-          rateQuery(
-            'sum by (result) (floor(rate(spring_kafka_template_seconds_count{' + ns + ', name="harvestEventKafkaTemplate"}[5m])*300))',
-            'publish:{{result}}',
-          ),
-        ],
-      ),
-      ['sum', 'lastNotNull'],
-    ),
-  ),
-
-  withLogLink(
-    linePanel(
-      'Spring Kafka listener duration',
-      { h: 6, w: 12, x: 12, y: 12 },
-      [
-        rateQuery(
-          |||
-            sum(rate(spring_kafka_listener_seconds_sum{%s}[5m]))
-            /
-            sum(rate(spring_kafka_listener_seconds_count{%s}[5m]))
-          ||| % [ns, ns],
-          'Average',
-        ),
-        rateQuery(
-          'max(spring_kafka_listener_seconds_max{' + ns + '})',
-          'Max',
-        ),
-      ],
-      's',
     ),
   ),
 
   withLogLink(
     stackedBarPanel(
       'Circuit breaker not permitted calls',
-      { h: 6, w: 12, x: 0, y: 18 },
+      { h: 6, w: 12, x: 0, y: 12 },
       [
         rateQuery(
           'sum by (name) (floor(rate(resilience4j_circuitbreaker_not_permitted_calls_total{' + ns + ', name=~"' + cbNameRegex + '"}[5m])*300))',
@@ -308,7 +271,7 @@ dashboard.new('FDK Resource Service')
   withLogLink(
     linePanel(
       'Circuit breaker failure rate',
-      { h: 6, w: 12, x: 12, y: 18 },
+      { h: 6, w: 12, x: 12, y: 12 },
       [
         rateQuery(
           'max by (name) (resilience4j_circuitbreaker_failure_rate{' + ns + ', name=~"' + cbNameRegex + '"})',
@@ -332,11 +295,11 @@ dashboard.new('FDK Resource Service')
     tableLegend(
       stackedBarPanel(
         'Resources stored',
-        { h: 6, w: 12, x: 0, y: 24 },
+        { h: 6, w: 12, x: 0, y: 18 },
         [
           rateQuery(
-            'sum by (type) (floor(rate(resources_stored_total{' + ns + '}[5m])*300))',
-            '{{type}}',
+            'sum by (type, kind) (floor(rate(resources_stored_total{' + ns + '}[5m])*300))',
+            '{{type}} / {{kind}}',
           ),
         ],
       ),
@@ -348,7 +311,7 @@ dashboard.new('FDK Resource Service')
     tableLegend(
       stackedBarPanel(
         'Resources deleted',
-        { h: 6, w: 12, x: 12, y: 24 },
+        { h: 6, w: 12, x: 12, y: 18 },
         [
           rateQuery(
             'sum by (type) (floor(rate(resources_deleted_total{' + ns + '}[5m])*300))',
@@ -364,7 +327,7 @@ dashboard.new('FDK Resource Service')
   withLogLink(
     linePanel(
       'Store JSON duration',
-      { h: 6, w: 12, x: 0, y: 30 },
+      { h: 6, w: 12, x: 0, y: 24 },
       [
         rateQuery(
           |||
@@ -382,7 +345,7 @@ dashboard.new('FDK Resource Service')
   withLogLink(
     linePanel(
       'Store JSON-LD duration',
-      { h: 6, w: 12, x: 12, y: 30 },
+      { h: 6, w: 12, x: 12, y: 24 },
       [
         rateQuery(
           |||
@@ -401,7 +364,7 @@ dashboard.new('FDK Resource Service')
     tableLegend(
       stackedBarPanel(
         'RDF conversion rate',
-        { h: 6, w: 12, x: 0, y: 36 },
+        { h: 6, w: 12, x: 0, y: 30 },
         [
           rateQuery(
             'sum by (from, to, outcome) (floor(rate(rdf_conversion_duration_seconds_count{' + ns + '}[5m])*300))',
@@ -416,7 +379,7 @@ dashboard.new('FDK Resource Service')
   withLogLink(
     linePanel(
       'RDF conversion duration',
-      { h: 6, w: 12, x: 12, y: 36 },
+      { h: 6, w: 12, x: 12, y: 30 },
       [
         rateQuery(
           |||
@@ -435,10 +398,10 @@ dashboard.new('FDK Resource Service')
   withLogLink(
     linePanel(
       'Order lifecycle rate',
-      { h: 8, w: 12, x: 0, y: 42 },
+      { h: 8, w: 12, x: 0, y: 36 },
       [
         rateQuery(
-          'sum without (instance, pod) (rate(union_graph_orders_total{' + ns + '}[5m]))',
+          'sum without (instance, pod) (rate(union_graph_orders_created_total{' + ns + '}[5m]))',
           'Created',
         ),
         rateQuery(
@@ -492,19 +455,19 @@ dashboard.new('FDK Resource Service')
     )
     + prometheusQuery.withRange(true),
   ])
-  + barGaugePanel.panelOptions.withGridPos(8, 12, 12, 42),
+  + barGaugePanel.panelOptions.withGridPos(8, 12, 12, 36),
 
   withLogLink(
     linePanel(
       'Resources Processed vs Total',
-      { h: 8, w: 12, x: 0, y: 50 },
+      { h: 8, w: 12, x: 0, y: 44 },
       [
         rateQuery(
           'sum by (order_id) (union_graph_processing_resources_processed{' + ns + ', order_id!=""})',
           '{{order_id}} - Processed',
         ),
         rateQuery(
-          'sum by (order_id) (union_graph_processing_resources{' + ns + ', order_id!=""})',
+          'sum by (order_id) (union_graph_processing_resources_total{' + ns + ', order_id!=""})',
           '{{order_id}} - Total',
         ),
       ],
@@ -514,7 +477,7 @@ dashboard.new('FDK Resource Service')
   withLogLink(
     linePanel(
       'Processing Duration',
-      { h: 8, w: 12, x: 12, y: 50 },
+      { h: 8, w: 12, x: 12, y: 44 },
       [
         rateQuery(
           |||
@@ -527,10 +490,6 @@ dashboard.new('FDK Resource Service')
         rateQuery(
           'max(union_graph_processing_duration_seconds_max{' + ns + '})',
           'Max',
-        ),
-        rateQuery(
-          'sum(rate(union_graph_processing_duration_seconds_count{' + ns + '}[5m]))',
-          'Count/sec',
         ),
       ],
       's',
@@ -552,11 +511,11 @@ dashboard.new('FDK Resource Service')
   + pieChartPanel.queryOptions.withTargets([
     query('sum by (reason) (union_graph_orders_failed_total{' + ns + '})', '{{reason}}', 'A'),
   ])
-  + pieChartPanel.panelOptions.withGridPos(8, 12, 0, 58),
+  + pieChartPanel.panelOptions.withGridPos(8, 12, 0, 52),
 
   overviewStat(
     'Processing Time Statistics',
-    { h: 8, w: 12, x: 12, y: 58 },
+    { h: 8, w: 12, x: 12, y: 52 },
     [
       query(
         |||
@@ -568,7 +527,6 @@ dashboard.new('FDK Resource Service')
         'A',
       ),
       query('max(union_graph_processing_duration_seconds_max{' + ns + '})', 'Max', 'B'),
-      query('sum(rate(union_graph_processing_duration_seconds_count{' + ns + '}[5m]))', 'Count/sec', 'C'),
     ],
     's',
     'area',
@@ -576,10 +534,18 @@ dashboard.new('FDK Resource Service')
 
   overviewStat(
     'DataServices Expanded',
-    { h: 6, w: 12, x: 0, y: 66 },
+    { h: 6, w: 12, x: 0, y: 60 },
     [
-      query('max(union_graph_data_services_expanded_total{' + ns + '})', 'Total Expanded', 'A'),
-      query('sum by () (rate(union_graph_data_services_expanded_total{' + ns + '}[5m]))', 'Expansion Rate', 'B'),
+      query(
+        'sum without (instance, pod) (union_graph_data_services_expanded_total{' + ns + '})',
+        'Total Expanded',
+        'A',
+      ),
+      query(
+        'sum without (instance, pod) (rate(union_graph_data_services_expanded_total{' + ns + '}[5m]))',
+        'Expansion Rate',
+        'B',
+      ),
     ],
     'short',
     'area',
@@ -588,7 +554,7 @@ dashboard.new('FDK Resource Service')
   withLogLink(
     linePanel(
       'Resources Processed Rate',
-      { h: 6, w: 12, x: 12, y: 66 },
+      { h: 6, w: 12, x: 12, y: 60 },
       [
         rateQuery(
           'sum without (instance, pod) (rate(union_graph_resources_processed_total{' + ns + '}[5m]))',
@@ -603,11 +569,11 @@ dashboard.new('FDK Resource Service')
     tableLegend(
       stackedBarPanel(
         'Webhook calls by status',
-        { h: 8, w: 12, x: 0, y: 72 },
+        { h: 8, w: 12, x: 0, y: 66 },
         [
           rateQuery(
-            'sum by (success, status) (floor(rate(union_graph_webhook_calls_total{' + ns + '}[5m])*300))',
-            'success={{success}} / {{status}}',
+            'sum by (status) (floor(rate(union_graph_webhook_calls_total{' + ns + '}[5m])*300))',
+            '{{status}}',
           ),
         ],
       ),
@@ -618,7 +584,7 @@ dashboard.new('FDK Resource Service')
   withLogLink(
     linePanel(
       'Webhook Call Duration',
-      { h: 8, w: 12, x: 12, y: 72 },
+      { h: 8, w: 12, x: 12, y: 66 },
       [
         rateQuery(
           |||
@@ -640,7 +606,7 @@ dashboard.new('FDK Resource Service')
   withLogLink(
     linePanel(
       'Union graph executor',
-      { h: 6, w: 12, x: 0, y: 80 },
+      { h: 6, w: 12, x: 0, y: 74 },
       [
         rateQuery('max(union_graph_executor_active_threads{' + ns + '})', 'Active threads'),
         rateQuery('max(union_graph_executor_pool_size{' + ns + '})', 'Pool size'),
@@ -653,7 +619,7 @@ dashboard.new('FDK Resource Service')
   withLogLink(
     linePanel(
       'Union graph batch duration',
-      { h: 6, w: 12, x: 12, y: 80 },
+      { h: 6, w: 12, x: 12, y: 74 },
       [
         rateQuery(
           |||
@@ -674,23 +640,22 @@ dashboard.new('FDK Resource Service')
 
   withLogLink(
     linePanel(
-      'Union graph snapshot bytes',
-      { h: 6, w: 12, x: 0, y: 86 },
+      'Union graph snapshot batch chars',
+      { h: 6, w: 12, x: 0, y: 80 },
       [
         rateQuery(
           |||
-            sum(rate(union_graph_snapshot_bytes_sum{%s}[5m]))
+            sum(rate(union_graph_snapshot_batch_chars_sum{%s}[5m]))
             /
-            sum(rate(union_graph_snapshot_bytes_count{%s}[5m]))
+            sum(rate(union_graph_snapshot_batch_chars_count{%s}[5m]))
           ||| % [ns, ns],
-          'Avg size',
+          'Avg chars/batch',
         ),
         rateQuery(
-          'sum(rate(union_graph_snapshot_bytes_sum{' + ns + '}[5m]))',
-          'Bytes/sec',
+          'sum(rate(union_graph_snapshot_batch_chars_sum{' + ns + '}[5m]))',
+          'Chars/sec',
         ),
       ],
-      'bytes',
     ),
   ),
 
@@ -706,7 +671,7 @@ dashboard.new('FDK Resource Service')
       'B',
     ),
     instantTableQuery(
-      'sum by (order_id) (union_graph_processing_resources{' + ns + ', order_id!=""})',
+      'sum by (order_id) (union_graph_processing_resources_total{' + ns + ', order_id!=""})',
       'C',
     ),
   ])
@@ -750,17 +715,17 @@ dashboard.new('FDK Resource Service')
     + tablePanel.options.sortBy.withDesc(),
   ])
   + tablePanel.options.withShowHeader(true)
-  + tablePanel.panelOptions.withGridPos(10, 12, 12, 86),
+  + tablePanel.panelOptions.withGridPos(10, 12, 12, 80),
 
   // --- HTTP and DB ---
   withLogLink(
     tableLegend(
       stackedBarPanel(
         'HTTP /v1 requests',
-        { h: 8, w: 12, x: 0, y: 96 },
+        { h: 8, w: 12, x: 0, y: 90 },
         [
           rateQuery(
-            'sum by (status, uri, method) (floor(rate(http_server_requests_seconds_count{' + ns + ', uri=~"/v1/.*"}[5m])*300))',
+            'sum by (status, uri, method) (floor(rate(http_server_requests_seconds_count{' + svc + ', uri=~"/v1/.*"}[5m])*300))',
             '{{method}} {{uri}} {{status}}',
           ),
         ],
@@ -772,14 +737,14 @@ dashboard.new('FDK Resource Service')
   withLogLink(
     linePanel(
       'HTTP /v1 duration',
-      { h: 8, w: 12, x: 12, y: 96 },
+      { h: 8, w: 12, x: 12, y: 90 },
       [
         rateQuery(
           |||
             sum by (uri) (rate(http_server_requests_seconds_sum{%s, uri=~"/v1/.*"}[5m]))
             /
             sum by (uri) (rate(http_server_requests_seconds_count{%s, uri=~"/v1/.*"}[5m]))
-          ||| % [ns, ns],
+          ||| % [svc, svc],
           '{{uri}}',
         ),
       ],
@@ -790,12 +755,12 @@ dashboard.new('FDK Resource Service')
   withLogLink(
     linePanel(
       'HikariCP connections',
-      { h: 6, w: 12, x: 0, y: 104 },
+      { h: 6, w: 12, x: 0, y: 98 },
       [
-        rateQuery('max(hikaricp_connections_active{' + ns + '})', 'Active'),
-        rateQuery('max(hikaricp_connections_idle{' + ns + '})', 'Idle'),
-        rateQuery('max(hikaricp_connections_pending{' + ns + '})', 'Pending'),
-        rateQuery('max(hikaricp_connections_max{' + ns + '})', 'Max'),
+        rateQuery('max(hikaricp_connections_active{' + svc + '})', 'Active'),
+        rateQuery('max(hikaricp_connections_idle{' + svc + '})', 'Idle'),
+        rateQuery('max(hikaricp_connections_pending{' + svc + '})', 'Pending'),
+        rateQuery('max(hikaricp_connections_max{' + svc + '})', 'Max'),
       ],
     ),
   ),
@@ -803,10 +768,10 @@ dashboard.new('FDK Resource Service')
   withLogLink(
     linePanel(
       'HikariCP timeouts',
-      { h: 6, w: 12, x: 12, y: 104 },
+      { h: 6, w: 12, x: 12, y: 98 },
       [
         rateQuery(
-          'sum(rate(hikaricp_connections_timeout_total{' + ns + '}[5m]))',
+          'sum(rate(hikaricp_connections_timeout_total{' + svc + '}[5m]))',
           'Timeouts/sec',
         ),
       ],
@@ -818,10 +783,10 @@ dashboard.new('FDK Resource Service')
   withLogLink(
     linePanel(
       'Error log rate',
-      { h: 6, w: 24, x: 0, y: 110 },
+      { h: 6, w: 24, x: 0, y: 104 },
       [
         rateQuery(
-          'sum(rate(logback_events_total{' + ns + ', level="error"}[5m]))',
+          'sum(rate(logback_events_total{' + svc + ', level="error"}[5m]))',
           'Errors/sec',
         ),
       ],
