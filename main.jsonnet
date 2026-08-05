@@ -11,7 +11,6 @@
     mqa: (import 'mqa.jsonnet'),
     nginx: (import 'nginx.jsonnet'),
     preview: (import 'preview.jsonnet'),
-    rabbit: (import 'rabbit.jsonnet'),
     search: (import 'search.jsonnet'),
     trivy: (import 'trivy.jsonnet'),
     resource: (import 'resource.jsonnet'),
