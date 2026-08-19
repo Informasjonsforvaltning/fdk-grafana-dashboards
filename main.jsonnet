@@ -5,6 +5,7 @@
     blackbox: (import 'blackbox.jsonnet'),
     harvest: (import 'harvest.jsonnet'),
     harvestAdmin: (import 'harvest-admin.jsonnet'),
+    harvestArchive: (import 'harvest-archive.jsonnet'),
     reasoning: (import 'reasoning.jsonnet'),
     rdfparsing: (import 'rdfparsing.jsonnet'),
     kafka: (import 'kafka.jsonnet'),
