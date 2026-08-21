@@ -224,7 +224,7 @@ dashboard.new('FDK Harvest Archive')
   ),
 
   overviewStat(
-    'Files saved (since restart)',
+    'Unzipped files on disk (last scan)',
     { h: 6, w: 6, x: 12, y: 0 },
     [
       query(
@@ -235,7 +235,7 @@ dashboard.new('FDK Harvest Archive')
   ),
 
   overviewStat(
-    'Bytes written (since restart)',
+    'Unzipped bytes on disk (last scan)',
     { h: 6, w: 6, x: 18, y: 0 },
     [
       query(
@@ -394,7 +394,7 @@ dashboard.new('FDK Harvest Archive')
 
   // --- Archive storage ---
   linePanel(
-    'Files saved by type (since restart)',
+    'Unzipped files by type (last scan)',
     { h: 8, w: 12, x: 0, y: 38 },
     [
       query(
@@ -406,7 +406,7 @@ dashboard.new('FDK Harvest Archive')
   + timeSeriesPanel.options.legend.withShowLegend(true),
 
   linePanel(
-    'Bytes written by type (since restart)',
+    'Unzipped bytes by type (last scan)',
     { h: 8, w: 12, x: 12, y: 38 },
     [
       query(
