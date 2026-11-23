@@ -12,12 +12,22 @@ dashboard.new(
 )
 .addTemplate(
   template.new(
+    'cluster',
+    'prometheus',
+    'label_values(kafka_brokers, kafka_cluster)',
+    label='Cluster',
+    refresh='load',
+  )
+)
+.addTemplate(
+  template.new(
     'topic',
     'prometheus',
-    'label_values(kafka_topic_partition_current_offset{topic!="__consumer_offsets",topic!="_schemas"}, topic)',
+    'label_values(kafka_topic_partition_current_offset{kafka_cluster="$cluster",topic!="__consumer_offsets",topic!="_schemas"}, topic)',
     label='Topic',
     includeAll=true,
     multi=true,
+    refresh='load',
   )
 )
 .addPanel(
@@ -26,7 +36,7 @@ dashboard.new(
     showPoints='never',
   ).addTarget(
     prometheus.target(
-      'sum(rate(kafka_topic_partition_current_offset{topic=~"$topic"}[3m])) by (topic)',
+      'sum(rate(kafka_topic_partition_current_offset{kafka_cluster="$cluster",topic=~"$topic"}[3m])) by (topic)',
       datasource='prometheus',
       intervalFactor=1,
       interval='1s',
@@ -46,7 +56,7 @@ dashboard.new(
   )
   .addTarget(
     prometheus.target(
-      'sum(rate(kafka_consumergroup_current_offset{topic=~"$topic"}[3m])) by (consumergroup, topic)',
+      'sum(rate(kafka_consumergroup_current_offset{kafka_cluster="$cluster",topic=~"$topic"}[3m])) by (consumergroup, topic)',
       datasource='prometheus',
       intervalFactor=1,
       interval='1s',
@@ -65,7 +75,7 @@ dashboard.new(
     showPoints='never',
   ).addTarget(
     prometheus.target(
-      'avg(kafka_consumergroup_lag{topic=~"$topic"}) by (consumergroup, topic)',
+      'avg(kafka_consumergroup_lag{kafka_cluster="$cluster",topic=~"$topic"}) by (consumergroup, topic)',
       datasource='prometheus',
       intervalFactor=1,
       interval='1s',
@@ -85,7 +95,7 @@ dashboard.new(
   )
   .addTarget(
     prometheus.target(
-      'sum(kafka_topic_partitions{topic=~"$topic"}) by(topic)',
+      'sum(kafka_topic_partitions{kafka_cluster="$cluster",topic=~"$topic"}) by(topic)',
       format='table',
       instant=true,
     )
@@ -125,7 +135,7 @@ dashboard.new(
   )
   .addTarget(
     prometheus.target(
-      'sum(kafka_consumergroup_members{consumergroup!="schema-registry"}) by(consumergroup)',
+      'sum(kafka_consumergroup_members{kafka_cluster="$cluster",consumergroup!="schema-registry"}) by(consumergroup)',
       format='table',
       instant=true,
     )
