@@ -9,17 +9,17 @@ local statPanel = g.panel.stat;
 
 local prometheus = 'prometheus';
 local fdkService = 'reference-data';
-local ns = 'kubernetes_namespace="$namespace"';
+local ns = 'namespace="$namespace"';
 local svc = ns + ', fdk_service="' + fdkService + '"';
 local harvest = svc + ', module=~"$module"';
 
 local logExplorerUrl =
-  'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22'
+  'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22'
   + fdkService
   + '%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod';
 
 local logExplorerErrorUrl =
-  'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22'
+  'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22'
   + fdkService
   + '%22%20severity%3E%3DDEFAULT%0Aseverity%3DERROR;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod';
 
@@ -155,7 +155,7 @@ dashboard.new('FDK Reference Data')
         type: 'prometheus',
         uid: 'prometheus',
       },
-      definition: 'label_values(reference_data_harvest_total,kubernetes_namespace)',
+      definition: 'label_values(reference_data_harvest_total,namespace)',
       hide: 0,
       includeAll: false,
       multi: false,
@@ -163,7 +163,7 @@ dashboard.new('FDK Reference Data')
       options: [],
       query: {
         qryType: 1,
-        query: 'label_values(reference_data_harvest_total,kubernetes_namespace)',
+        query: 'label_values(reference_data_harvest_total,namespace)',
         refId: 'PrometheusVariableQueryEditor-VariableQuery',
       },
       refresh: 1,

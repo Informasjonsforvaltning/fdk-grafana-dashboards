@@ -564,7 +564,7 @@ dashboard.new(
       'sum(trivy_image_vulnerabilities{severity="Critical"})',
       datasource='prometheus',
       interval='1m',
-      legendFormat='{{fdk_service}} ({{kubernetes_namespace}})',
+      legendFormat='{{fdk_service}} ({{namespace}})',
     )
   ), gridPos={
     x: 0,
@@ -585,7 +585,7 @@ dashboard.new(
       'sum(trivy_image_vulnerabilities{severity="High"})',
       datasource='prometheus',
       interval='1m',
-      legendFormat='{{fdk_service}} ({{kubernetes_namespace}})',
+      legendFormat='{{fdk_service}} ({{namespace}})',
     )
   ), gridPos={
     x: 0,

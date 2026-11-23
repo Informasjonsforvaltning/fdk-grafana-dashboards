@@ -25,7 +25,7 @@ dashboard.new('FDK Search')
        "type": "prometheus",
        "uid": "prometheus"
      },
-     "definition": "label_values(search_seconds_count,kubernetes_namespace)",
+     "definition": "label_values(search_seconds_count,namespace)",
      "hide": 0,
      "includeAll": false,
      "multi": false,
@@ -33,7 +33,7 @@ dashboard.new('FDK Search')
      "options": [],
      "query": {
        "qryType": 1,
-       "query": "label_values(search_seconds_count,kubernetes_namespace)",
+       "query": "label_values(search_seconds_count,namespace)",
        "refId": "PrometheusVariableQueryEditor-VariableQuery"
      },
      "refresh": 1,
@@ -55,7 +55,7 @@ dashboard.new('FDK Search')
             prometheusQuery.new(
               'prometheus',
               |||
-                sum by (kubernetes_namespace, fdk_service) (rate(search_seconds_count{kubernetes_namespace="$namespace"}[5m])*300)
+                sum by (namespace, fdk_service) (rate(search_seconds_count{namespace="$namespace"}[5m])*300)
               |||
             )
             + prometheusQuery.withIntervalFactor(2)
@@ -72,7 +72,7 @@ dashboard.new('FDK Search')
                 {
                   targetBlank: true,
                   title: 'View in Log Explorer',
-                  url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
+                  url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
                 }
               ]
            }
@@ -91,7 +91,7 @@ dashboard.new('FDK Search')
             prometheusQuery.new(
               'promehteus',
                 |||
-                    sum by (fdk_service, kubernetes_namespace) (rate(search_seconds_sum{kubernetes_namespace="$namespace"}[5m])/rate(search_seconds_count{kubernetes_namespace="$namespace"}[5m]))
+                    sum by (fdk_service, namespace) (rate(search_seconds_sum{namespace="$namespace"}[5m])/rate(search_seconds_count{namespace="$namespace"}[5m]))
                 |||
             )
             + prometheusQuery.withIntervalFactor(2)
@@ -106,7 +106,7 @@ dashboard.new('FDK Search')
                     {
                       targetBlank: true,
                       title: 'View in Log Explorer',
-                      url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
+                      url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
                     }
                   ]
                }
@@ -124,7 +124,7 @@ dashboard.new('FDK Search')
             prometheusQuery.new(
               'prometheus',
               |||
-                sum by (fdk_service, kubernetes_namespace) (rate(search_error{kubernetes_namespace="$namespace"}[5m])*300)
+                sum by (fdk_service, namespace) (rate(search_error{namespace="$namespace"}[5m])*300)
               |||
             )
             + prometheusQuery.withIntervalFactor(2)
@@ -141,7 +141,7 @@ dashboard.new('FDK Search')
                 {
                   targetBlank: true,
                   title: 'View in Log Explorer',
-                  url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT%0Aseverity%3DERROR;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
+                  url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT%0Aseverity%3DERROR;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
                 }
               ]
            }
@@ -159,7 +159,7 @@ dashboard.new('FDK Search')
           prometheusQuery.new(
             'prometheus',
             |||
-              sum by (kubernetes_namespace, fdk_service) (rate(search_suggestion_seconds_count{kubernetes_namespace="$namespace"}[5m])*300)
+              sum by (namespace, fdk_service) (rate(search_suggestion_seconds_count{namespace="$namespace"}[5m])*300)
             |||
           )
           + prometheusQuery.withIntervalFactor(2)
@@ -176,7 +176,7 @@ dashboard.new('FDK Search')
               {
                 targetBlank: true,
                 title: 'View in Log Explorer',
-                url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
+                url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
               }
             ]
          }
@@ -195,7 +195,7 @@ dashboard.new('FDK Search')
               prometheusQuery.new(
                 'promehteus',
                   |||
-                      sum by (fdk_service, kubernetes_namespace) (rate(search_suggestion_seconds_sum{kubernetes_namespace="$namespace"}[5m])/rate(search_suggestion_seconds_count{kubernetes_namespace="$namespace"}[5m]))
+                      sum by (fdk_service, namespace) (rate(search_suggestion_seconds_sum{namespace="$namespace"}[5m])/rate(search_suggestion_seconds_count{namespace="$namespace"}[5m]))
                   |||
               )
               + prometheusQuery.withIntervalFactor(2)
@@ -210,7 +210,7 @@ dashboard.new('FDK Search')
                       {
                         targetBlank: true,
                         title: 'View in Log Explorer',
-                        url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
+                        url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
                       }
                     ]
                  }
@@ -228,7 +228,7 @@ dashboard.new('FDK Search')
               prometheusQuery.new(
                 'prometheus',
                 |||
-                  sum by (fdk_service, kubernetes_namespace) (rate(search_suggestion_error{kubernetes_namespace="$namespace"}[5m])*300)
+                  sum by (fdk_service, namespace) (rate(search_suggestion_error{namespace="$namespace"}[5m])*300)
                 |||
               )
               + prometheusQuery.withIntervalFactor(2)
@@ -245,7 +245,7 @@ dashboard.new('FDK Search')
                   {
                     targetBlank: true,
                     title: 'View in Log Explorer',
-                    url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT%0Aseverity%3DERROR;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
+                    url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT%0Aseverity%3DERROR;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
                   }
                 ]
              }
@@ -263,7 +263,7 @@ dashboard.new('FDK Search')
                      prometheusQuery.new(
                        'prometheus',
                        |||
-                         sum by (kubernetes_namespace, fdk_service) (rate(search_index_seconds_count{kubernetes_namespace="$namespace"}[5m])*300)
+                         sum by (namespace, fdk_service) (rate(search_index_seconds_count{namespace="$namespace"}[5m])*300)
                        |||
                      )
                      + prometheusQuery.withIntervalFactor(2)
@@ -280,7 +280,7 @@ dashboard.new('FDK Search')
                          {
                            targetBlank: true,
                            title: 'View in Log Explorer',
-                           url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
+                           url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
                          }
                        ]
                     }
@@ -299,7 +299,7 @@ dashboard.new('FDK Search')
                  prometheusQuery.new(
                    'promehteus',
                      |||
-                         sum by (fdk_service, kubernetes_namespace) (rate(search_index_seconds_sum{kubernetes_namespace="$namespace"}[5m])/rate(search_index_seconds_count{kubernetes_namespace="$namespace"}[5m]))
+                         sum by (fdk_service, namespace) (rate(search_index_seconds_sum{namespace="$namespace"}[5m])/rate(search_index_seconds_count{namespace="$namespace"}[5m]))
                      |||
                  )
                  + prometheusQuery.withIntervalFactor(2)
@@ -314,7 +314,7 @@ dashboard.new('FDK Search')
                          {
                            targetBlank: true,
                            title: 'View in Log Explorer',
-                           url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
+                           url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
                          }
                        ]
                     }
@@ -332,7 +332,7 @@ dashboard.new('FDK Search')
                  prometheusQuery.new(
                    'prometheus',
                    |||
-                     sum by (fdk_service, kubernetes_namespace) (rate(search_index_error{kubernetes_namespace="$namespace"}[5m])*300)
+                     sum by (fdk_service, namespace) (rate(search_index_error{namespace="$namespace"}[5m])*300)
                    |||
                  )
                  + prometheusQuery.withIntervalFactor(2)
@@ -349,7 +349,7 @@ dashboard.new('FDK Search')
                      {
                        targetBlank: true,
                        title: 'View in Log Explorer',
-                       url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT%0Aseverity%3DERROR;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
+                       url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT%0Aseverity%3DERROR;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
                      }
                    ]
                 }
@@ -367,7 +367,7 @@ dashboard.new('FDK Search')
                     prometheusQuery.new(
                       'prometheus',
                       |||
-                        sum by (kubernetes_namespace, fdk_service) (rate(search_delete_seconds_count{kubernetes_namespace="$namespace"}[5m])*300)
+                        sum by (namespace, fdk_service) (rate(search_delete_seconds_count{namespace="$namespace"}[5m])*300)
                       |||
                     )
                     + prometheusQuery.withIntervalFactor(2)
@@ -384,7 +384,7 @@ dashboard.new('FDK Search')
                         {
                           targetBlank: true,
                           title: 'View in Log Explorer',
-                          url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
+                          url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
                         }
                       ]
                    }
@@ -403,7 +403,7 @@ dashboard.new('FDK Search')
                     prometheusQuery.new(
                       'promehteus',
                         |||
-                            sum by (fdk_service, kubernetes_namespace) (rate(search_delete_seconds_sum{kubernetes_namespace="$namespace"}[5m])/rate(search_delete_seconds_count{kubernetes_namespace="$namespace"}[5m]))
+                            sum by (fdk_service, namespace) (rate(search_delete_seconds_sum{namespace="$namespace"}[5m])/rate(search_delete_seconds_count{namespace="$namespace"}[5m]))
                         |||
                     )
                     + prometheusQuery.withIntervalFactor(2)
@@ -418,7 +418,7 @@ dashboard.new('FDK Search')
                             {
                               targetBlank: true,
                               title: 'View in Log Explorer',
-                              url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
+                              url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
                             }
                           ]
                        }
@@ -436,7 +436,7 @@ dashboard.new('FDK Search')
                     prometheusQuery.new(
                       'prometheus',
                       |||
-                        sum by (fdk_service, kubernetes_namespace) (rate(search_delete_error{kubernetes_namespace="$namespace"}[5m])*300)
+                        sum by (fdk_service, namespace) (rate(search_delete_error{namespace="$namespace"}[5m])*300)
                       |||
                     )
                     + prometheusQuery.withIntervalFactor(2)
@@ -453,7 +453,7 @@ dashboard.new('FDK Search')
                         {
                           targetBlank: true,
                           title: 'View in Log Explorer',
-                          url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT%0Aseverity%3DERROR;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
+                          url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT%0Aseverity%3DERROR;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
                         }
                       ]
                    }

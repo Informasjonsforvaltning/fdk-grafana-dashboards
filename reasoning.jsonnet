@@ -6,18 +6,18 @@ local timeSeriesPanel = g.panel.timeSeries;
 local statPanel = g.panel.stat;
 
 local prometheus = 'prometheus';
-local ns = 'kubernetes_namespace="$namespace"';
+local ns = 'namespace="$namespace"';
 local cbName = 'reasoning-cb';
 local listenerId = 'reasoning';
 local fdkService = 'fdk-reasoning-service';
 
 local logExplorerUrl =
-  'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22'
+  'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22'
   + fdkService
   + '%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod';
 
 local logExplorerErrorUrl =
-  'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22'
+  'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22'
   + fdkService
   + '%22%20severity%3E%3DDEFAULT%0Aseverity%3DERROR;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod';
 
@@ -110,7 +110,7 @@ dashboard.new('FDK Reasoning')
         type: 'prometheus',
         uid: 'prometheus',
       },
-      definition: 'label_values(reasoning_seconds_sum,kubernetes_namespace)',
+      definition: 'label_values(reasoning_seconds_sum,namespace)',
       hide: 0,
       includeAll: false,
       multi: false,
@@ -118,7 +118,7 @@ dashboard.new('FDK Reasoning')
       options: [],
       query: {
         qryType: 1,
-        query: 'label_values(reasoning_seconds_sum,kubernetes_namespace)',
+        query: 'label_values(reasoning_seconds_sum,namespace)',
         refId: 'PrometheusVariableQueryEditor-VariableQuery',
       },
       refresh: 1,
@@ -167,7 +167,7 @@ dashboard.new('FDK Reasoning')
         { h: 6, w: 12, x: 0, y: 0 },
         [
           rateQuery(
-            'sum by (type, kubernetes_namespace, fdk_service) (reasoning_seconds_count{' + ns + ', type=~"$type"})',
+            'sum by (type, namespace, fdk_service) (reasoning_seconds_count{' + ns + ', type=~"$type"})',
             '{{type}}',
           ),
         ],
@@ -185,7 +185,7 @@ dashboard.new('FDK Reasoning')
         [
           prometheusQuery.new(
             prometheus,
-            'sum by (type, fdk_service, kubernetes_namespace) (increase(reasoning_event_processing_total{' + ns + ', type=~"$type", result="nacked"}[$__interval])) or vector(0)',
+            'sum by (type, fdk_service, namespace) (increase(reasoning_event_processing_total{' + ns + ', type=~"$type", result="nacked"}[$__interval])) or vector(0)',
           )
           + prometheusQuery.withLegendFormat('{{type}}'),
         ],
@@ -205,7 +205,7 @@ dashboard.new('FDK Reasoning')
       { h: 8, w: 24, x: 0, y: 6 },
       [
         rateQuery(
-          'sum by (type, fdk_service, kubernetes_namespace) (reasoning_seconds_sum{' + ns + ', type=~"$type"}) / sum by (type, fdk_service, kubernetes_namespace) (reasoning_seconds_count{' + ns + ', type=~"$type"})',
+          'sum by (type, fdk_service, namespace) (reasoning_seconds_sum{' + ns + ', type=~"$type"}) / sum by (type, fdk_service, namespace) (reasoning_seconds_count{' + ns + ', type=~"$type"})',
           '{{type}}',
         ),
       ],
@@ -219,7 +219,7 @@ dashboard.new('FDK Reasoning')
       { h: 8, w: 24, x: 0, y: 14 },
       [
         rateQuery(
-          'sum by (type, fdk_service, kubernetes_namespace) (reasoning_deduction_seconds_sum{' + ns + ', type=~"$type"}) / sum by (type, fdk_service, kubernetes_namespace) (reasoning_seconds_count{' + ns + ', type=~"$type"})',
+          'sum by (type, fdk_service, namespace) (reasoning_deduction_seconds_sum{' + ns + ', type=~"$type"}) / sum by (type, fdk_service, namespace) (reasoning_seconds_count{' + ns + ', type=~"$type"})',
           '{{type}}',
         ),
       ],
@@ -233,7 +233,7 @@ dashboard.new('FDK Reasoning')
       { h: 8, w: 24, x: 0, y: 22 },
       [
         rateQuery(
-          'sum by (type, fdk_service, kubernetes_namespace) (reasoning_organization_seconds_sum{' + ns + ', type=~"$type"}) / sum by (type, fdk_service, kubernetes_namespace) (reasoning_seconds_count{' + ns + ', type=~"$type"})',
+          'sum by (type, fdk_service, namespace) (reasoning_organization_seconds_sum{' + ns + ', type=~"$type"}) / sum by (type, fdk_service, namespace) (reasoning_seconds_count{' + ns + ', type=~"$type"})',
           '{{type}}',
         ),
       ],
@@ -247,7 +247,7 @@ dashboard.new('FDK Reasoning')
       { h: 8, w: 24, x: 0, y: 30 },
       [
         rateQuery(
-          'sum by (type, fdk_service, kubernetes_namespace) (reasoning_reference_data_seconds_sum{' + ns + ', type=~"$type"}) / sum by (type, fdk_service, kubernetes_namespace) (reasoning_seconds_count{' + ns + ', type=~"$type"})',
+          'sum by (type, fdk_service, namespace) (reasoning_reference_data_seconds_sum{' + ns + ', type=~"$type"}) / sum by (type, fdk_service, namespace) (reasoning_seconds_count{' + ns + ', type=~"$type"})',
           '{{type}}',
         ),
       ],
