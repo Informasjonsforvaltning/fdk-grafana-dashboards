@@ -7,18 +7,18 @@ local gaugePanel = g.panel.gauge;
 local statPanel = g.panel.stat;
 
 local prometheus = 'prometheus';
-local ns = 'kubernetes_namespace="$namespace"';
+local ns = 'namespace="$namespace"';
 local cbName = 'harvest-event-consumer-cb';
 local listenerId = 'harvest-event-listener';
 local fdkService = 'fdk-harvest-admin-service';
 
 local logExplorerUrl =
-  'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22'
+  'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22'
   + fdkService
   + '%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod';
 
 local logExplorerErrorUrl =
-  'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22'
+  'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22'
   + fdkService
   + '%22%20severity%3E%3DDEFAULT%0Aseverity%3DERROR;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod';
 
@@ -100,7 +100,7 @@ dashboard.new('FDK Harvest Admin - Run Performance Dashboard')
         type: 'prometheus',
         uid: 'prometheus',
       },
-      definition: 'label_values(harvest_runs_started_total,kubernetes_namespace)',
+      definition: 'label_values(harvest_runs_started_total,namespace)',
       hide: 0,
       includeAll: false,
       multi: false,
@@ -108,7 +108,7 @@ dashboard.new('FDK Harvest Admin - Run Performance Dashboard')
       options: [],
       query: {
         qryType: 1,
-        query: 'label_values(harvest_runs_started_total,kubernetes_namespace)',
+        query: 'label_values(harvest_runs_started_total,namespace)',
         refId: 'PrometheusVariableQueryEditor-VariableQuery',
       },
       refresh: 1,

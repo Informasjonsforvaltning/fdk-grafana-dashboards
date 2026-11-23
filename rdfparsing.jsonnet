@@ -11,7 +11,7 @@ local util = g.util;
 local prometheus = 'prometheus';
 
 local logExplorerUrl(errorOnly=false) =
-  'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT'
+  'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT'
   + (if errorOnly then '%0Aseverity%3DERROR' else '')
   + ';aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod';
 
@@ -77,7 +77,7 @@ dashboard.new('FDK RDF Parsing')
        "type": "prometheus",
        "uid": "prometheus"
      },
-     "definition": "label_values(processed_messages,kubernetes_namespace)",
+     "definition": "label_values(processed_messages,namespace)",
      "hide": 0,
      "includeAll": false,
      "multi": false,
@@ -85,7 +85,7 @@ dashboard.new('FDK RDF Parsing')
      "options": [],
      "query": {
        "qryType": 1,
-       "query": "label_values(rdf_parse_seconds_sum,kubernetes_namespace)",
+       "query": "label_values(rdf_parse_seconds_sum,namespace)",
        "refId": "PrometheusVariableQueryEditor-VariableQuery"
      },
      "refresh": 1,
@@ -135,7 +135,7 @@ dashboard.new('FDK RDF Parsing')
             prometheusQuery.new(
               'prometheus',
               |||
-                sum by (type, kubernetes_namespace, fdk_service) (rate(rdf_parse_seconds_count{kubernetes_namespace="$namespace", type=~"$type"}[5m])*300)
+                sum by (type, namespace, fdk_service) (rate(rdf_parse_seconds_count{namespace="$namespace", type=~"$type"}[5m])*300)
               |||
             )
             + prometheusQuery.withIntervalFactor(2)
@@ -152,7 +152,7 @@ dashboard.new('FDK RDF Parsing')
                 {
                   targetBlank: true,
                   title: 'View in Log Explorer',
-                  url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
+                  url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
                 }
               ]
            }
@@ -170,7 +170,7 @@ dashboard.new('FDK RDF Parsing')
             prometheusQuery.new(
               'prometheus',
               |||
-                sum by (type, fdk_service, kubernetes_namespace) (rate(rdf_parse_error{kubernetes_namespace="$namespace", type=~"$type"}[5m])*300)
+                sum by (type, fdk_service, namespace) (rate(rdf_parse_error{namespace="$namespace", type=~"$type"}[5m])*300)
               |||
             )
             + prometheusQuery.withIntervalFactor(2)
@@ -187,7 +187,7 @@ dashboard.new('FDK RDF Parsing')
                 {
                   targetBlank: true,
                   title: 'View in Log Explorer',
-                  url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT%0Aseverity%3DERROR;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
+                  url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT%0Aseverity%3DERROR;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
                 }
               ]
            }
@@ -206,7 +206,7 @@ dashboard.new('FDK RDF Parsing')
             prometheusQuery.new(
               'promehteus',
                 |||
-                    sum by (type, fdk_service, kubernetes_namespace) (rate(rdf_parse_seconds_sum{kubernetes_namespace="$namespace", type=~"$type"}[5m])/rate(rdf_parse_seconds_count{kubernetes_namespace="$namespace", type=~"$type"}[5m]))
+                    sum by (type, fdk_service, namespace) (rate(rdf_parse_seconds_sum{namespace="$namespace", type=~"$type"}[5m])/rate(rdf_parse_seconds_count{namespace="$namespace", type=~"$type"}[5m]))
                 |||
             )
             + prometheusQuery.withIntervalFactor(2)
@@ -221,7 +221,7 @@ dashboard.new('FDK RDF Parsing')
                     {
                       targetBlank: true,
                       title: 'View in Log Explorer',
-                      url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
+                      url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod'
                     }
                   ]
                }
@@ -238,7 +238,7 @@ dashboard.new('FDK RDF Parsing')
         + statPanel.queryOptions.withDatasource(prometheus, prometheus)
         + statPanel.queryOptions.withTargets([
             rateQuery(
-              'max by (name) (resilience4j_circuitbreaker_state{kubernetes_namespace="$namespace", state="open"})',
+              'max by (name) (resilience4j_circuitbreaker_state{namespace="$namespace", state="open"})',
               '{{name}}',
             ),
           ])
@@ -268,7 +268,7 @@ dashboard.new('FDK RDF Parsing')
         + statPanel.queryOptions.withDatasource(prometheus, prometheus)
         + statPanel.queryOptions.withTargets([
             rateQuery(
-              'max by (listener) (kafka_listener_paused{kubernetes_namespace="$namespace"})',
+              'max by (listener) (kafka_listener_paused{namespace="$namespace"})',
               '{{listener}}',
             ),
           ])
@@ -296,7 +296,7 @@ dashboard.new('FDK RDF Parsing')
         { h: 6, w: 12, x: 0, y: 26 },
         [
           rateQuery(
-            'sum by (type, result, fdk_service, kubernetes_namespace) (floor(rate(rdf_parse_event_processing_total{kubernetes_namespace="$namespace", type=~"$type"}[5m])*300))',
+            'sum by (type, result, fdk_service, namespace) (floor(rate(rdf_parse_event_processing_total{namespace="$namespace", type=~"$type"}[5m])*300))',
             '{{type}}:{{result}}',
           ),
         ],
@@ -309,7 +309,7 @@ dashboard.new('FDK RDF Parsing')
         { h: 6, w: 12, x: 12, y: 26 },
         [
           rateQuery(
-            'sum by (kind, type, status, reason, fdk_service, kubernetes_namespace) (floor(rate(rdf_parse_event_publish_total{kubernetes_namespace="$namespace"}[5m])*300))',
+            'sum by (kind, type, status, reason, fdk_service, namespace) (floor(rate(rdf_parse_event_publish_total{namespace="$namespace"}[5m])*300))',
             '{{kind}}:{{type}} ({{status}}/{{reason}})',
           ),
         ],
@@ -323,7 +323,7 @@ dashboard.new('FDK RDF Parsing')
         { h: 6, w: 12, x: 0, y: 32 },
         [
           rateQuery(
-            'sum by (name, fdk_service, kubernetes_namespace) (floor(rate(resilience4j_circuitbreaker_not_permitted_calls_total{kubernetes_namespace="$namespace"}[5m])*300))',
+            'sum by (name, fdk_service, namespace) (floor(rate(resilience4j_circuitbreaker_not_permitted_calls_total{namespace="$namespace"}[5m])*300))',
             '{{name}}',
           ),
         ],
@@ -336,7 +336,7 @@ dashboard.new('FDK RDF Parsing')
         { h: 6, w: 12, x: 12, y: 32 },
         [
           rateQuery(
-            'max by (name, fdk_service, kubernetes_namespace) (resilience4j_circuitbreaker_failure_rate{kubernetes_namespace="$namespace"})',
+            'max by (name, fdk_service, namespace) (resilience4j_circuitbreaker_failure_rate{namespace="$namespace"})',
             '{{name}}',
           ),
         ],
@@ -360,7 +360,7 @@ dashboard.new('FDK RDF Parsing')
         { h: 6, w: 12, x: 0, y: 38 },
         [
           rateQuery(
-            'sum by (type, reason, fdk_service, kubernetes_namespace) (floor(rate(rdf_parse_error{kubernetes_namespace="$namespace", type=~"$type"}[5m])*300))',
+            'sum by (type, reason, fdk_service, namespace) (floor(rate(rdf_parse_error{namespace="$namespace", type=~"$type"}[5m])*300))',
             '{{type}} - {{reason}}',
           ),
         ],
@@ -374,7 +374,7 @@ dashboard.new('FDK RDF Parsing')
         { h: 6, w: 12, x: 12, y: 38 },
         [
           rateQuery(
-            'sum by (type, parser, status, fdk_service, kubernetes_namespace) (floor(rate(rdf_parse_profile_match_total{kubernetes_namespace="$namespace", type=~"$type"}[5m])*300))',
+            'sum by (type, parser, status, fdk_service, namespace) (floor(rate(rdf_parse_profile_match_total{namespace="$namespace", type=~"$type"}[5m])*300))',
             '{{type}} / {{parser}} ({{status}})',
           ),
         ],
@@ -387,7 +387,7 @@ dashboard.new('FDK RDF Parsing')
         { h: 8, w: 12, x: 0, y: 44 },
         [
           rateQuery(
-            'sum by (type, fdk_service, kubernetes_namespace) (rate(rdf_parse_pipeline_lag_seconds_sum{kubernetes_namespace="$namespace", type=~"$type"}[5m])/rate(rdf_parse_pipeline_lag_seconds_count{kubernetes_namespace="$namespace", type=~"$type"}[5m]))',
+            'sum by (type, fdk_service, namespace) (rate(rdf_parse_pipeline_lag_seconds_sum{namespace="$namespace", type=~"$type"}[5m])/rate(rdf_parse_pipeline_lag_seconds_count{namespace="$namespace", type=~"$type"}[5m]))',
             '{{type}}',
           ),
         ],
@@ -402,7 +402,7 @@ dashboard.new('FDK RDF Parsing')
         { h: 8, w: 12, x: 12, y: 44 },
         [
           rateQuery(
-            'sum by (type, direction, fdk_service, kubernetes_namespace) (rate(rdf_parse_payload_size_chars_sum{kubernetes_namespace="$namespace", type=~"$type"}[5m])/rate(rdf_parse_payload_size_chars_count{kubernetes_namespace="$namespace", type=~"$type"}[5m]))',
+            'sum by (type, direction, fdk_service, namespace) (rate(rdf_parse_payload_size_chars_sum{namespace="$namespace", type=~"$type"}[5m])/rate(rdf_parse_payload_size_chars_count{namespace="$namespace", type=~"$type"}[5m]))',
             '{{type}} ({{direction}})',
           ),
         ],
@@ -415,7 +415,7 @@ dashboard.new('FDK RDF Parsing')
       { h: 6, w: 24, x: 0, y: 52 },
       [
         rateQuery(
-          'max by (topic, kubernetes_namespace) (kafka_consumer_fetch_manager_records_lag{kubernetes_namespace="$namespace"})',
+          'max by (topic, namespace) (kafka_consumer_fetch_manager_records_lag{namespace="$namespace"})',
           '{{topic}}',
         ),
       ],

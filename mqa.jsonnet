@@ -25,7 +25,7 @@ dashboard.new('FDK Metadata Quality')
          "type": "prometheus",
          "uid": "prometheus"
        },
-       "definition": "label_values(processed_messages,kubernetes_namespace)",
+       "definition": "label_values(processed_messages,namespace)",
        "hide": 0,
        "includeAll": false,
        "multi": false,
@@ -33,7 +33,7 @@ dashboard.new('FDK Metadata Quality')
        "options": [],
        "query": {
          "qryType": 1,
-         "query": "label_values(processed_messages,kubernetes_namespace)",
+         "query": "label_values(processed_messages,namespace)",
          "refId": "PrometheusVariableQueryEditor-VariableQuery"
        },
        "refresh": 1,
@@ -54,7 +54,7 @@ dashboard.new('FDK Metadata Quality')
     prometheusQuery.new(
       'prometheus',
       |||
-        sum by (fdk_service) ({__name__="processed_messages", fdk_service='fdk-mqa-assmentator',status="success", kubernetes_namespace="$namespace"})
+        sum by (fdk_service) ({__name__="processed_messages", fdk_service='fdk-mqa-assmentator',status="success", namespace="$namespace"})
       |||
     )])
   + statPanel.standardOptions.thresholds.withMode('absolute')
@@ -72,7 +72,7 @@ dashboard.new('FDK Metadata Quality')
     prometheusQuery.new(
       'prometheus',
       |||
-        sum by (fdk_service) ({__name__="produced_messages", fdk_service='fdk-mqa-assmentator',status="success", kubernetes_namespace="$namespace"})
+        sum by (fdk_service) ({__name__="produced_messages", fdk_service='fdk-mqa-assmentator',status="success", namespace="$namespace"})
       |||
     )])
   + statPanel.standardOptions.thresholds.withMode('absolute')
@@ -90,7 +90,7 @@ dashboard.new('FDK Metadata Quality')
     prometheusQuery.new(
       'prometheus',
       |||
-        sum by (fdk_service) ({__name__="processed_messages", fdk_service='fdk-mqa-url-checker',status="success", kubernetes_namespace="$namespace"})
+        sum by (fdk_service) ({__name__="processed_messages", fdk_service='fdk-mqa-url-checker',status="success", namespace="$namespace"})
       |||
     )])
   + statPanel.standardOptions.thresholds.withMode('absolute')
@@ -108,7 +108,7 @@ dashboard.new('FDK Metadata Quality')
     prometheusQuery.new(
       'prometheus',
       |||
-        sum by (fdk_service) ({__name__="processed_messages", fdk_service='fdk-mqa-property-checker',status="success", kubernetes_namespace="$namespace"})
+        sum by (fdk_service) ({__name__="processed_messages", fdk_service='fdk-mqa-property-checker',status="success", namespace="$namespace"})
       |||
     )])
   + statPanel.standardOptions.thresholds.withMode('absolute')
@@ -126,7 +126,7 @@ dashboard.new('FDK Metadata Quality')
     prometheusQuery.new(
       'prometheus',
       |||
-        sum by (fdk_service) ({__name__="processed_messages_total", fdk_service='fdk-mqa-dcat-validator',status="success", kubernetes_namespace="$namespace"})
+        sum by (fdk_service) ({__name__="processed_messages_total", fdk_service='fdk-mqa-dcat-validator',status="success", namespace="$namespace"})
       |||
     )])
   + statPanel.standardOptions.thresholds.withMode('absolute')
@@ -144,7 +144,7 @@ dashboard.new('FDK Metadata Quality')
     prometheusQuery.new(
       'prometheus',
       |||
-        sum by (fdk_service) ({__name__="processed_messages", fdk_service='fdk-mqa-scoring-service',status="success", kubernetes_namespace="$namespace"})
+        sum by (fdk_service) ({__name__="processed_messages", fdk_service='fdk-mqa-scoring-service',status="success", namespace="$namespace"})
       |||
     )])
    + statPanel.standardOptions.thresholds.withMode('absolute')
@@ -159,7 +159,7 @@ dashboard.new('FDK Metadata Quality')
     prometheusQuery.new(
       'prometheus',
       |||
-        sum(rate({__name__=~"^processed_messages(_total)?$", status="success", fdk_service=~"fdk-mqa-.*", kubernetes_namespace="$namespace"}[10m])*600) by (fdk_service)
+        sum(rate({__name__=~"^processed_messages(_total)?$", status="success", fdk_service=~"fdk-mqa-.*", namespace="$namespace"}[10m])*600) by (fdk_service)
       |||
     )
     + prometheusQuery.withIntervalFactor(2)
@@ -176,7 +176,7 @@ dashboard.new('FDK Metadata Quality')
     prometheusQuery.new(
       'prometheus',
       |||
-        sum(rate({__name__=~"^processed_messages(_total)?$", status="skipped", fdk_service=~"fdk-mqa-.*", kubernetes_namespace="$namespace"}[10m])*600) by (fdk_service)
+        sum(rate({__name__=~"^processed_messages(_total)?$", status="skipped", fdk_service=~"fdk-mqa-.*", namespace="$namespace"}[10m])*600) by (fdk_service)
       |||
     )
     + prometheusQuery.withIntervalFactor(2)
@@ -201,7 +201,7 @@ dashboard.new('FDK Metadata Quality')
     prometheusQuery.new(
       'prometheus',
       |||
-        sum(rate({__name__=~"^processed_messages(_total)?$", status="error", fdk_service=~"fdk-mqa-.*", kubernetes_namespace="$namespace"}[10m])*600) by (fdk_service)
+        sum(rate({__name__=~"^processed_messages(_total)?$", status="error", fdk_service=~"fdk-mqa-.*", namespace="$namespace"}[10m])*600) by (fdk_service)
       |||
     )
     + prometheusQuery.withIntervalFactor(2)
@@ -218,7 +218,7 @@ dashboard.new('FDK Metadata Quality')
         prometheusQuery.new(
           'prometheus',
           |||
-            sum(rate({__name__=~"^produced_messages(_total)?$", status="success", fdk_service=~"fdk-mqa-.*", kubernetes_namespace="$namespace"}[10m])*600) by (fdk_service)
+            sum(rate({__name__=~"^produced_messages(_total)?$", status="success", fdk_service=~"fdk-mqa-.*", namespace="$namespace"}[10m])*600) by (fdk_service)
           |||
         )
         + prometheusQuery.withIntervalFactor(2)
@@ -239,7 +239,7 @@ dashboard.new('FDK Metadata Quality')
     prometheusQuery.new(
       'prometheus',
       |||
-        avg({__name__=~"^processing_time(_seconds)?_sum$", fdk_service=~"fdk-mqa-.*", kubernetes_namespace="$namespace"} / {__name__=~"^processing_time(_seconds)?_count$", fdk_service=~"fdk-mqa-.*", kubernetes_namespace="$namespace"}) by (fdk_service)
+        avg({__name__=~"^processing_time(_seconds)?_sum$", fdk_service=~"fdk-mqa-.*", namespace="$namespace"} / {__name__=~"^processing_time(_seconds)?_count$", fdk_service=~"fdk-mqa-.*", namespace="$namespace"}) by (fdk_service)
       |||
     )
     + prometheusQuery.withIntervalFactor(2)

@@ -8,13 +8,13 @@ local tablePanel = g.panel.table;
 local logLink = {
   targetBlank: true,
   title: 'View in Log Explorer',
-  url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod',
+  url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod',
 };
 
 local errorLogLink = {
   targetBlank: true,
   title: 'View in Log Explorer',
-  url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.kubernetes_namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT%0Aseverity%3DERROR;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod',
+  url: 'https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.location%3D%22europe-north1-a%22%0Aresource.labels.namespace_name%3D%22${__field.labels.namespace}%22%0Alabels.k8s-pod%2Ffdk_service%3D%22${__field.labels.fdk_service}%22%20severity%3E%3DDEFAULT%0Aseverity%3DERROR;aroundTime=${__value.time:date:iso:YYYY-MM-DDTHH:mm:ssZ}?project=digdir-fdk-prod',
 };
 
 local withLogLinks(panel, links) =
@@ -84,7 +84,7 @@ dashboard.new('FDK Dataset Preview')
         type: 'prometheus',
         uid: 'prometheus',
       },
-      definition: 'label_values(preview_request_count_total,kubernetes_namespace)',
+      definition: 'label_values(preview_request_count_total,namespace)',
       hide: 0,
       includeAll: false,
       multi: false,
@@ -92,7 +92,7 @@ dashboard.new('FDK Dataset Preview')
       options: [],
       query: {
         qryType: 1,
-        query: 'label_values(preview_request_count_total,kubernetes_namespace)',
+        query: 'label_values(preview_request_count_total,namespace)',
         refId: 'PrometheusVariableQueryEditor-VariableQuery',
       },
       refresh: 1,
@@ -112,7 +112,7 @@ dashboard.new('FDK Dataset Preview')
         type: 'prometheus',
         uid: 'prometheus',
       },
-      definition: 'label_values(preview_count_total{kubernetes_namespace="$namespace", format!="none"},format)',
+      definition: 'label_values(preview_count_total{namespace="$namespace", format!="none"},format)',
       hide: 0,
       includeAll: true,
       multi: false,
@@ -120,7 +120,7 @@ dashboard.new('FDK Dataset Preview')
       options: [],
       query: {
         qryType: 1,
-        query: 'label_values(preview_count_total{kubernetes_namespace="$namespace", format!="none"},format)',
+        query: 'label_values(preview_count_total{namespace="$namespace", format!="none"},format)',
         refId: 'PrometheusVariableQueryEditor-VariableQuery',
       },
       refresh: 1,
@@ -135,8 +135,8 @@ dashboard.new('FDK Dataset Preview')
   counterPanel(
     'Successful preview requests',
     |||
-      sum by (kubernetes_namespace, fdk_service) (
-        preview_request_count_total{kubernetes_namespace="$namespace", method="POST", status="success"}
+      sum by (namespace, fdk_service) (
+        preview_request_count_total{namespace="$namespace", method="POST", status="success"}
       )
     |||,
     'success',
@@ -147,8 +147,8 @@ dashboard.new('FDK Dataset Preview')
   counterPanel(
     'Failed preview requests',
     |||
-      sum by (error_type, kubernetes_namespace, fdk_service) (
-        preview_request_count_total{kubernetes_namespace="$namespace", method="POST", status="error"}
+      sum by (error_type, namespace, fdk_service) (
+        preview_request_count_total{namespace="$namespace", method="POST", status="error"}
       )
     |||,
     '{{error_type}}',
@@ -159,8 +159,8 @@ dashboard.new('FDK Dataset Preview')
   counterPanel(
     'Successful previews by format',
     |||
-      sum by (format, kubernetes_namespace, fdk_service) (
-        preview_count_total{kubernetes_namespace="$namespace", status="success", format=~"$format"}
+      sum by (format, namespace, fdk_service) (
+        preview_count_total{namespace="$namespace", status="success", format=~"$format"}
       )
     |||,
     '{{format}}',
@@ -171,8 +171,8 @@ dashboard.new('FDK Dataset Preview')
   counterPanel(
     'Failed previews by error type',
     |||
-      sum by (error_type, kubernetes_namespace, fdk_service) (
-        preview_count_total{kubernetes_namespace="$namespace", status="error"}
+      sum by (error_type, namespace, fdk_service) (
+        preview_count_total{namespace="$namespace", status="error"}
       )
     |||,
     '{{error_type}}',
@@ -183,12 +183,12 @@ dashboard.new('FDK Dataset Preview')
   avgPanel(
     'Preview duration',
     |||
-      sum by (format, kubernetes_namespace, fdk_service) (
-        preview_duration_seconds_sum{kubernetes_namespace="$namespace", format=~"$format"}
+      sum by (format, namespace, fdk_service) (
+        preview_duration_seconds_sum{namespace="$namespace", format=~"$format"}
       )
       /
-      sum by (format, kubernetes_namespace, fdk_service) (
-        preview_duration_seconds_count{kubernetes_namespace="$namespace", format=~"$format"}
+      sum by (format, namespace, fdk_service) (
+        preview_duration_seconds_count{namespace="$namespace", format=~"$format"}
       )
     |||,
     '{{format}}',
@@ -199,12 +199,12 @@ dashboard.new('FDK Dataset Preview')
   avgPanel(
     'Download duration',
     |||
-      sum by (status_code, kubernetes_namespace, fdk_service) (
-        preview_download_duration_seconds_sum{kubernetes_namespace="$namespace"}
+      sum by (status_code, namespace, fdk_service) (
+        preview_download_duration_seconds_sum{namespace="$namespace"}
       )
       /
-      sum by (status_code, kubernetes_namespace, fdk_service) (
-        preview_download_duration_seconds_count{kubernetes_namespace="$namespace"}
+      sum by (status_code, namespace, fdk_service) (
+        preview_download_duration_seconds_count{namespace="$namespace"}
       )
     |||,
     '{{status_code}}',
@@ -215,8 +215,8 @@ dashboard.new('FDK Dataset Preview')
   counterPanel(
     'Successful downloads',
     |||
-      sum by (status_code, kubernetes_namespace, fdk_service) (
-        preview_download_count_total{kubernetes_namespace="$namespace", status="success"}
+      sum by (status_code, namespace, fdk_service) (
+        preview_download_count_total{namespace="$namespace", status="success"}
       )
     |||,
     '{{status_code}}',
@@ -227,8 +227,8 @@ dashboard.new('FDK Dataset Preview')
   counterPanel(
     'Failed downloads',
     |||
-      sum by (status_code, kubernetes_namespace, fdk_service) (
-        preview_download_count_total{kubernetes_namespace="$namespace", status="error"}
+      sum by (status_code, namespace, fdk_service) (
+        preview_download_count_total{namespace="$namespace", status="error"}
       )
     |||,
     '{{status_code}}',
@@ -239,8 +239,8 @@ dashboard.new('FDK Dataset Preview')
   avgPanel(
     'Download bytes',
     |||
-      sum by (kubernetes_namespace, fdk_service) (
-        preview_download_bytes_total{kubernetes_namespace="$namespace"}
+      sum by (namespace, fdk_service) (
+        preview_download_bytes_total{namespace="$namespace"}
       )
     |||,
     'bytes',
@@ -252,12 +252,12 @@ dashboard.new('FDK Dataset Preview')
   avgPanel(
     'Average preview file size',
     |||
-      sum by (kubernetes_namespace, fdk_service) (
-        preview_file_size_bytes_sum{kubernetes_namespace="$namespace"}
+      sum by (namespace, fdk_service) (
+        preview_file_size_bytes_sum{namespace="$namespace"}
       )
       /
-      sum by (kubernetes_namespace, fdk_service) (
-        preview_file_size_bytes_count{kubernetes_namespace="$namespace"}
+      sum by (namespace, fdk_service) (
+        preview_file_size_bytes_count{namespace="$namespace"}
       )
     |||,
     'avg size',
@@ -269,9 +269,9 @@ dashboard.new('FDK Dataset Preview')
   counterPanel(
     'HTTP requests',
     |||
-      sum by (status, method, kubernetes_namespace, fdk_service) (
+      sum by (status, method, namespace, fdk_service) (
         http_server_requests_seconds_count{
-          kubernetes_namespace="$namespace",
+          namespace="$namespace",
           application="fdk-dataset-preview-service",
           uri="/preview"
         }
@@ -285,17 +285,17 @@ dashboard.new('FDK Dataset Preview')
   avgPanel(
     'HTTP request duration',
     |||
-      sum by (method, kubernetes_namespace, fdk_service) (
+      sum by (method, namespace, fdk_service) (
         http_server_requests_seconds_sum{
-          kubernetes_namespace="$namespace",
+          namespace="$namespace",
           application="fdk-dataset-preview-service",
           uri="/preview"
         }
       )
       /
-      sum by (method, kubernetes_namespace, fdk_service) (
+      sum by (method, namespace, fdk_service) (
         http_server_requests_seconds_count{
-          kubernetes_namespace="$namespace",
+          namespace="$namespace",
           application="fdk-dataset-preview-service",
           uri="/preview"
         }
@@ -314,7 +314,7 @@ dashboard.new('FDK Dataset Preview')
       |||
         topk(10,
           sum by (resource_url, error_type) (
-            preview_count_total{kubernetes_namespace="$namespace", status="error"}
+            preview_count_total{namespace="$namespace", status="error"}
           )
         )
       |||
