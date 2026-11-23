@@ -16,6 +16,7 @@ dashboard.new(
     'prometheus',
     'label_values(kafka_brokers, kafka_cluster)',
     label='Cluster',
+    current='staging',
     refresh='load',
   )
 )
